@@ -1,0 +1,135 @@
+.ticket-history-page {
+  padding: 30px 40px;
+  background: #f4f6fb;
+  min-height: 100vh;
+}
+
+/* NAVBAR */
+.th-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #eef2ff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.history-count {
+  font-weight: 600;
+  color: #555;
+}
+
+/* CONTROLS */
+.history-controls {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 15px;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  padding: 10px 14px;
+  border-radius: 8px;
+  flex: 1;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  width: 100%;
+}
+
+.filter-dropdown {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  background: white;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  font-weight: 500;
+}
+
+/* HISTORY CARDS */
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.history-card {
+  background: white;
+  padding: 16px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  transition: 0.2s;
+}
+
+.history-card:hover {
+  transform: translateY(-3px);
+}
+
+.ticket-id {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2b6cb0;
+  min-width: 60px;
+}
+
+.ticket-info h4 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.ticket-info p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: #777;
+}
+
+.ticket-status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+/* Status Colors */
+.ticket-status.completed {
+  background: #e6f9f0;
+  color: #28a745;
+}
+
+.ticket-status.cancelled {
+  background: #fdecea;
+  color: #dc3545;
+}
+
+.ticket-status.missed {
+  background: #fff4e5;
+  color: #ff9800;
+}
+
+.icon.success { color: #28a745; }
+.icon.danger { color: #dc3545; }
+.icon.warning { color: #ff9800; }
