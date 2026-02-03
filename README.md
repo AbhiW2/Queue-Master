@@ -1,21 +1,19 @@
-<<<<<<< HEAD
-# React + Vite
+# Queue Management System
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Queue Management System designed to organize customer flow and improve service efficiency in places like hospitals, banks, and service centers. The system uses a structured token-based process to reduce waiting time and ensure smooth, fair service handling.
 
-Currently, two official plugins are available:
+## Features
+- Token-based queue system  
+- Real-time queue tracking  
+- Reduced waiting time  
+- Improved service organization  
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Technologies Used
+- Frontend: HTML,React
+- Backend: SpringBoot 
+- Database: Mysql
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-=======
-# Queue-Master
-This project implements a smart Queue Management System designed to optimize service operations and provide a smooth, organized experience for customers.
->>>>>>> c4af0ac71fece03f1c12e8fbdc9e32decc541edd
+## Author
+**Abhijeet Wargad**
+**Varad Gavali**
+**Aarya Kale**
