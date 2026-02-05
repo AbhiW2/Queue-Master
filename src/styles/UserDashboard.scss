@@ -27,6 +27,40 @@
   z-index: 1000;
   color: white;
 }
+/* ===== About Button (Top Navbar Right) ===== */
+.about-btn {
+  background: transparent;
+  border: 1px solid #d0d5dd;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #344054;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-right: 12px;
+}
+
+.about-btn:hover {
+  background: #f2f4f7;
+  border-color: #98a2b3;
+  color: #101828;
+  transform: translateY(-1px);
+}
+
+.about-btn:active {
+  transform: scale(0.97);
+}
+
+/* Dark mode friendly (optional if you add dark theme later) */
+body.dark .about-btn {
+  border-color: #475467;
+  color: #e4e7ec;
+}
+
+body.dark .about-btn:hover {
+  background: #1f2937;
+}
 
 .nav-left {
   display: flex;
