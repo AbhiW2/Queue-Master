@@ -7,7 +7,6 @@ import SignUpPage from "./components/SignUpPage";
 import UserDashboard from "./components/UserDashboard";
 import StaffDashboard from "./components/StaffDashboard";
 import AdminDashboard from "./components/AdminDashboard";
-
 import HospitalList from "./components/HospitalList";
 import HotelList from "./components/HotelList";
 import BankList from "./components/BankList";
@@ -17,6 +16,9 @@ import BankServices from "./components/BankServices";
 import GovernmentServices from "./components/GovermentServices";
 import QueueStatus from "./components/QueueStatus";
 import TicketHistory from "./components/TicketHistory";
+import EstimatedWait from "./components/EstimatedWait";
+import Appointments from "./components/Appointments";
+import About from "./components/About";
 
 
 function App() {
@@ -121,6 +123,11 @@ function App() {
 
 <Route path="/queue-status" element={<QueueStatus />} />
 <Route path="/ticket-history" element={<TicketHistory />} />
+<Route path="/estimated-wait" element={<EstimatedWait />} />
+<Route path="/appointments" element={<Appointments />} />
+
+<Route path="/about" element={<About />} />
+
       </Routes>
     </Router>
   );
