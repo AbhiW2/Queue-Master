@@ -10,7 +10,6 @@ body {
     color: #333;
 }
 
-/* Navbar */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -40,10 +39,8 @@ body {
     color: white !important;
     padding: 8px 16px;
     border-radius: 6px;
-    
 }
 
-/* Hero */
 .hero {
     display: flex;
     align-items: center;
@@ -80,7 +77,6 @@ body {
     padding: 12px 22px;
     border-radius: 8px;
     font-weight: 600;
-
 }
 
 .secondary-btn {
@@ -94,7 +90,6 @@ body {
     width: 380px;
 }
 
-/* Features */
 .features {
     padding: 80px 8%;
     text-align: center;
@@ -118,7 +113,6 @@ body {
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-/* About */
 .about {
     padding: 80px 8%;
     background: #eef2ff;
