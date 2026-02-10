@@ -19,6 +19,7 @@ import TicketHistory from "./components/TicketHistory";
 import EstimatedWait from "./components/EstimatedWait";
 import Appointments from "./components/Appointments";
 import About from "./components/About";
+import ViewQueue from "./components/ViewQueue";
 
 
 function App() {
@@ -125,8 +126,8 @@ function App() {
 <Route path="/ticket-history" element={<TicketHistory />} />
 <Route path="/estimated-wait" element={<EstimatedWait />} />
 <Route path="/appointments" element={<Appointments />} />
-
-<Route path="/about" element={<About />} />
+  <Route path="/about" element={<About />} />
+<Route path="/view-queue" element={<ViewQueue />} />
 
       </Routes>
     </Router>
