@@ -21,28 +21,6 @@ a {
 /* NAVBAR */
 /* ============================= */
 
-.navbar {
-  width: 100%;
-  padding: 22px 8%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  z-index: 1000;
-
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.logo {
-  font-size: 26px;
-  font-weight: 800;
-  color: #2563eb;
-  letter-spacing: 0.5px;
-}
-
 .nav-links {
   display: flex;
   align-items: center;
@@ -53,12 +31,29 @@ a {
     font-weight: 500;
     color: #334155;
     transition: 0.25s ease;
+    position: relative;   // add this
+
+    &::after {            // add this
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 0%;
+      height: 2px;
+      background-color: #8b5fc5;
+      transition: width 0.3s ease;
+    }
 
     &:hover {
-      color: #eb6425;
+      color: #8e71db;
+    }
+
+    &:hover::after {      // add this
+      width: 100%;
     }
   }
 }
+
 
 .nav-btn {
   padding: 10px 22px;
