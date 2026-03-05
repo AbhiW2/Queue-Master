@@ -66,9 +66,9 @@ const AppRoutes = () => {
         <Route path="/hospitals" element={<Hospitals />} />
         <Route path="/hospitals/:hospitalId/doctors" element={<DoctorList />} />
         <Route path="/banks" element={<BankList />} />
-        <Route path="/banks/:bankName/services" element={<BankServices />} />
+        <Route path="/banks/:branchId/services" element={<BankServices />} />
         <Route path="/government-offices" element={<GovtOfficeList />} />
-        <Route path="/government-offices/:officeName/services" element={<GovernmentServices />} />
+        <Route path="/government-offices/:officeId/services" element={<GovernmentServices />} />
         <Route path="/hotels" element={<Hotel />} />
       </Routes>
     </BrowserRouter>
