@@ -1,27 +1,3 @@
-// import React from "react";
-// import { BrowserRouter, Routes, Route } from "react-router-dom";
-// import Welcome from "../features/public/Welcome/Welcome";
-// import LoginPage from "../features/auth/login/LoginPage";
-// import SignUpPage from "../features/auth/signup/SignUpPage";
-// import UserDashboard from "../features/user/pages/UserDashboard";
-// const AppRoutes = () => {
-//   return (
-//     <BrowserRouter>
-//       <Routes>
-//         <Route path="/" element={<Welcome />} />
-//         <Route path="/login" element={<LoginPage />} />
-//         <Route path="/signup" element={<SignUpPage />} />
-//         <Route path="/UserDashboard" element={<UserDashboard />} />
-//       </Routes>
-//     </BrowserRouter>
-//   );
-// };
-
-// export default AppRoutes;
-
-
-
-
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Welcome from "../features/public/Welcome/Welcome";
