@@ -1,196 +1,3 @@
-// import React, { useState } from "react";
-// import { useNavigate, useParams } from "react-router-dom";
-// import "../styles/ServiceModern.scss";
-
-// const GovernmentServices = () => {
-//   const navigate = useNavigate();
-//   const { officeName } = useParams();
-//   const [selectedService, setSelectedService] = useState(null);
-//   const [search, setSearch] = useState("");
-
-//   const services = [
-//     {
-//       id: 1,
-//       name: "Document Verification",
-//       description: "ID, address and certificate verification",
-//       counter: "Verification Desk",
-//       timing: "10:00 AM – 1:00 PM",
-//       status: "Available",
-//     },
-//     {
-//       id: 2,
-//       name: "Application Submission",
-//       description: "Submit government forms & applications",
-//       counter: "Counter 2",
-//       timing: "10:30 AM – 3:30 PM",
-//       status: "Busy",
-//     },
-//     {
-//       id: 3,
-//       name: "License / Permit Services",
-//       description: "Driving, trade and other permit services",
-//       counter: "Service Counter",
-//       timing: "11:00 AM – 2:00 PM",
-//       status: "Limited",
-//     },
-//     {
-//       id: 4,
-//       name: "Certificate Collection",
-//       description: "Birth, caste, income & residence certificates",
-//       counter: "Collection Desk",
-//       timing: "12:00 PM – 4:00 PM",
-//       status: "Available",
-//     },
-//   ];
-
-//   const filteredServices = services.filter(
-//     (s) =>
-//       s.name.toLowerCase().includes(search.toLowerCase()) ||
-//       s.description.toLowerCase().includes(search.toLowerCase()) ||
-//       s.counter.toLowerCase().includes(search.toLowerCase())
-//   );
-
-//   const handleGetToken = (service) => {
-//     setSelectedService(service);
-//   };
-
-//   const closeModal = () => {
-//     setSelectedService(null);
-//   };
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     alert(
-//       `Token booked for ${selectedService.name} at ${decodeURIComponent(
-//         officeName
-//       )}`
-//     );
-//     closeModal();
-//   };
-
-//   return (
-//     <div className="service-page">
-//       {/* NAVBAR */}
-//       <div className="service-navbar">
-//         <button className="back-btn" onClick={() => navigate(-1)}>
-//           ← Back
-//         </button>
-
-//         <div className="nav-brand">
-//           <div className="logo">🏛️</div>
-//           <div>
-//             <h2>Government Service Board</h2>
-//             <p>{decodeURIComponent(officeName)}</p>
-//           </div>
-//         </div>
-
-//         {/* Search Bar */}
-//         <div className="navbar-search">
-//           <input
-//             type="text"
-//             placeholder="Search service..."
-//             value={search}
-//             onChange={(e) => setSearch(e.target.value)}
-//           />
-//         </div>
-//       </div>
-
-//       {/* SERVICE BOARD */}
-//       <div className="service-table">
-//         {filteredServices.map((s) => (
-//           <div key={s.id} className="service-row doctor-board">
-//             <div className="doctor-left">
-//               <div className="doctor-avatar">{s.name.charAt(0)}</div>
-
-//               <div className="doctor-info-vertical">
-//                 <div className="doctor-name">{s.name}</div>
-//                 <div className="doctor-line">
-//                   <span className="label">Service:</span>
-//                   <span>{s.description}</span>
-//                 </div>
-//                 <div className="doctor-line">
-//                   <span className="label">Counter:</span>
-//                   <span>{s.counter}</span>
-//                 </div>
-//                 <div className="doctor-line">
-//                   <span className="label">Service Time:</span>
-//                   <span>{s.timing}</span>
-//                 </div>
-//               </div>
-//             </div>
-
-//             <div className="doctor-right">
-//               <span className={`status ${s.status.toLowerCase()}`}>
-//                 {s.status}
-//               </span>
-
-//               <button
-//                 className="token-btn"
-//                 disabled={s.status !== "Available"}
-//                 onClick={() => handleGetToken(s)}
-//               >
-//                 Get Token
-//               </button>
-//             </div>
-//           </div>
-//         ))}
-//       </div>
-
-//       {/* BOOKING MODAL */}
-//       {selectedService && (
-//         <div className="modal-overlay">
-//           <div className="modal-card compact">
-//             <div className="modal-header">
-//               <div>
-//                 <h3>Book Government Service Token</h3>
-//                 <div className="doctor-ref">
-//                   {selectedService.name} — {decodeURIComponent(officeName)}
-//                 </div>
-//               </div>
-//               <button className="close-btn" onClick={closeModal}>✕</button>
-//             </div>
-
-//             <form className="modal-form" onSubmit={handleSubmit}>
-//               <div className="form-grid">
-//                 <input type="text" placeholder="Full Name" required />
-//                 <input type="tel" placeholder="Mobile Number" required />
-//                 <input type="email" placeholder="Email Address" />
-//                 <input type="text" placeholder="Document / Application ID (if any)" />
-//                 <input type="date" required />
-//                 <input type="time" required />
-//               </div>
-
-//               <textarea
-//                 rows="2"
-//                 placeholder="Purpose or Additional Notes"
-//               ></textarea>
-
-//               <div className="modal-actions">
-//                 <button type="button" className="cancel-btn" onClick={closeModal}>
-//                   Cancel
-//                 </button>
-//                 <button type="submit" className="confirm-btn">
-//                   Confirm Booking
-//                 </button>
-//               </div>
-//             </form>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default GovernmentServices;
-
-
-
-
-
-
-
-
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../styles/ServiceModern.scss";
@@ -199,102 +6,150 @@ const GovernmentServices = () => {
   const navigate = useNavigate();
   const { officeId, officeName } = useParams();
 
-  const [services, setServices] = useState([]);
+  const [services,        setServices]        = useState([]);
   const [selectedService, setSelectedService] = useState(null);
-  const [search, setSearch] = useState("");
+  const [search,          setSearch]          = useState("");
+  const [loading,         setLoading]         = useState(true);
+  const [bookingLoading,  setBookingLoading]  = useState(false);
+  const [bookingResult,   setBookingResult]   = useState(null);
+  const [errorMessage,    setErrorMessage]    = useState("");
 
   const [formData, setFormData] = useState({
-    fullName: "",
-    mobile: "",
-    email: "",
-    documentId: "",
-    date: "",
-    time: "",
-    notes: "",
+    fullName    : "",
+    email       : "",
+    phoneNumber : "",
+    date        : new Date().toISOString().split("T")[0],
+    time        : "",
+    message     : "",
   });
 
-  // ✅ FETCH SERVICES FROM BACKEND
+  const userId      = localStorage.getItem("userId");
+  const token       = localStorage.getItem("token");
+  const authHeaders = {
+    "Content-Type": "application/json",
+    Authorization : `Bearer ${token}`
+  };
+
+  // ── Fetch branch services ──────────────────────────────
   useEffect(() => {
+    if (!officeId) return;
+    setLoading(true);
     fetch(`http://localhost:8080/api/branch-services/${officeId}`)
       .then((res) => res.json())
-      .then((data) => setServices(data))
-      .catch((err) => console.error("Error fetching services:", err));
+      .then((data) => { setServices(Array.isArray(data) ? data : []); setLoading(false); })
+      .catch((err) => { console.error("Error fetching services:", err); setLoading(false); });
   }, [officeId]);
 
-  // ✅ FILTER
   const filteredServices = services.filter(
     (s) =>
-      s.serviceName?.toLowerCase().includes(search.toLowerCase()) ||
+      s.name?.toLowerCase().includes(search.toLowerCase())        ||
       s.description?.toLowerCase().includes(search.toLowerCase()) ||
-      s.counterName?.toLowerCase().includes(search.toLowerCase())
+      s.counter?.toLowerCase().includes(search.toLowerCase())
   );
 
+  // ── Open modal ─────────────────────────────────────────
   const handleGetToken = (service) => {
+    if (!userId) { navigate("/login"); return; }
     setSelectedService(service);
-  };
-
-  const closeModal = () => {
-    setSelectedService(null);
-  };
-
-  const handleChange = (e) => {
+    setBookingResult(null);
+    setErrorMessage("");
     setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
+      fullName    : "",
+      email       : "",
+      phoneNumber : "",
+      date        : new Date().toISOString().split("T")[0],
+      time        : "",
+      message     : "",
     });
   };
 
-  // ✅ SUBMIT TOKEN TO BACKEND
+  // ── Close modal ────────────────────────────────────────
+  const closeModal = () => {
+    setSelectedService(null);
+    setBookingResult(null);
+    setErrorMessage("");
+  };
+
+  // ── Handle input change ────────────────────────────────
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // ── Book token ─────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!userId) { setErrorMessage("Please log in to book a token."); return; }
 
-    const tokenData = {
-      branchServiceId: selectedService.id,
-      fullName: formData.fullName,
-      mobile: formData.mobile,
-      email: formData.email,
-      documentId: formData.documentId,
-      appointmentDate: formData.date,
-      appointmentTime: formData.time,
-      notes: formData.notes,
+    const payload = {
+      queueType       : "BRANCH_SERVICE",
+      branchServiceId : selectedService.id,
+      doctorId        : null,
+      userId          : parseInt(userId),
+      bookingDate     : formData.date   // "yyyy-MM-dd" ✅
     };
 
-    try {
-      const response = await fetch("http://localhost:8080/api/tokens", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(tokenData),
-      });
+    console.log("Booking payload:", payload);
 
-      if (response.ok) {
-        alert("Token booked successfully!");
-        closeModal();
-      } else {
-        alert("Failed to book token.");
+    setBookingLoading(true);
+    setErrorMessage("");
+    setBookingResult(null);
+
+    try {
+      const res = await fetch(
+        "http://localhost:8080/api/v1/tokens/book",
+        {
+          method : "POST",
+          headers: authHeaders,
+          body   : JSON.stringify(payload)
+        }
+      );
+
+      if (!res.ok) {
+        const text = await res.text();
+        let msg = `HTTP ${res.status}`;
+        try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch {}
+        throw new Error(msg);
       }
-    } catch (error) {
-      console.error("Error booking token:", error);
+
+      const data = await res.json();
+      console.log("Booking success:", data);
+      setBookingResult(data);
+    } catch (err) {
+      console.error("Booking error:", err.message);
+      setErrorMessage(err.message || "Failed to book token. Please try again.");
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  // ── Cancel token ───────────────────────────────────────
+  const handleCancelToken = async () => {
+    if (!bookingResult?.tokenId) return;
+    try {
+      await fetch(
+        `http://localhost:8080/api/v1/tokens/${bookingResult.tokenId}/cancel?userId=${userId}`,
+        { method: "DELETE", headers: authHeaders }
+      );
+      closeModal();
+    } catch (err) {
+      console.error("Cancel error:", err.message);
     }
   };
 
   return (
     <div className="service-page">
-      {/* NAVBAR */}
-      <div className="service-navbar">
-        <button className="back-btn" onClick={() => navigate(-1)}>
-          ← Back
-        </button>
 
+      {/* ── NAVBAR ─────────────────────────────────────── */}
+      <div className="service-navbar">
+        <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
         <div className="nav-brand">
           <div className="logo">🏛️</div>
           <div>
             <h2>Government Service Board</h2>
-            <p>{decodeURIComponent(officeName)}</p>
+            <p>{officeName ? decodeURIComponent(officeName) : `Office ID: ${officeId}`}</p>
           </div>
         </div>
-
         <div className="navbar-search">
           <input
             type="text"
@@ -305,146 +160,255 @@ const GovernmentServices = () => {
         </div>
       </div>
 
-      {/* SERVICE LIST */}
+      {/* ── SERVICE LIST ───────────────────────────────── */}
       <div className="service-table">
-        {filteredServices.map((s) => (
-          <div key={s.id} className="service-row doctor-board">
-            <div className="doctor-left">
-              <div className="doctor-avatar">
-                {s.serviceName?.charAt(0)}
+        {loading ? (
+          <h3 style={{ padding: "20px" }}>Loading services...</h3>
+        ) : filteredServices.length === 0 ? (
+          <h3 style={{ padding: "20px" }}>No services found</h3>
+        ) : (
+          filteredServices.map((s) => (
+            <div key={s.id} className="service-row doctor-board">
+              <div className="doctor-left">
+                <div className="doctor-avatar">{s.name?.charAt(0)}</div>
+                <div className="doctor-info-vertical">
+                  <div className="doctor-name">{s.name}</div>
+                  <div className="doctor-line">
+                    <span className="label">Service:</span>
+                    <span>{s.description}</span>
+                  </div>
+                  <div className="doctor-line">
+                    <span className="label">Counter:</span>
+                    <span>{s.counter}</span>
+                  </div>
+                  <div className="doctor-line">
+                    <span className="label">Timing:</span>
+                    <span>{s.timing}</span>
+                  </div>
+                  <div className="doctor-line">
+                    <span className="label">Avg Time:</span>
+                    <span>{s.avgServiceTimeMinutes ?? "—"} mins</span>
+                  </div>
+                </div>
               </div>
-
-              <div className="doctor-info-vertical">
-                <div className="doctor-name">{s.serviceName}</div>
-
-                <div className="doctor-line">
-                  <span className="label">Service:</span>
-                  <span>{s.description}</span>
-                </div>
-
-                <div className="doctor-line">
-                  <span className="label">Counter:</span>
-                  <span>{s.counterName}</span>
-                </div>
-
-                <div className="doctor-line">
-                  <span className="label">Service Time:</span>
-                  <span>{s.timing}</span>
-                </div>
+              <div className="doctor-right">
+                <span className={`status ${s.status?.toLowerCase()}`}>
+                  {s.status}
+                </span>
+                <button
+                  className="token-btn"
+                  disabled={s.status !== "Available"}
+                  onClick={() => handleGetToken(s)}
+                >
+                  Get Token
+                </button>
               </div>
             </div>
-
-            <div className="doctor-right">
-              <span className={`status ${s.status?.toLowerCase()}`}>
-                {s.status}
-              </span>
-
-              <button
-                className="token-btn"
-                disabled={s.status !== "Available"}
-                onClick={() => handleGetToken(s)}
-              >
-                Get Token
-              </button>
-            </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
-      {/* BOOKING MODAL */}
+      {/* ── BOOKING MODAL ──────────────────────────────── */}
       {selectedService && (
         <div className="modal-overlay">
           <div className="modal-card compact">
-            <div className="modal-header">
-              <div>
-                <h3>Book Government Service Token</h3>
-                <div className="doctor-ref">
-                  {selectedService.serviceName} —{" "}
-                  {decodeURIComponent(officeName)}
+
+            {/* ── SUCCESS CARD ─────────────────────────── */}
+            {bookingResult ? (
+              <div className="success-card">
+                <div className="success-top">
+                  <div className="success-icon">✓</div>
+                  <h3>Booking Confirmed!</h3>
+                  <p>Your token has been booked successfully</p>
+                </div>
+                <div className="success-token-row">
+                  <span className="stl">Token Number</span>
+                  <span className="stv">{bookingResult.displayToken}</span>
+                </div>
+                <div className="success-details">
+                  <div className="sd-row"><span>Name</span><strong>{formData.fullName}</strong></div>
+                  <div className="sd-row"><span>Email</span><strong>{formData.email}</strong></div>
+                  <div className="sd-row"><span>Phone</span><strong>{formData.phoneNumber}</strong></div>
+                  <div className="sd-row"><span>Service</span><strong>{bookingResult.branchServiceName || selectedService.name}</strong></div>
+                  <div className="sd-row"><span>Office</span><strong>{bookingResult.branchName}</strong></div>
+                  <div className="sd-row"><span>Date</span><strong>{bookingResult.bookingDate}</strong></div>
+                  <div className="sd-row"><span>Time</span><strong>{formData.time}</strong></div>
+                  <div className="sd-row"><span>Queue Position</span><strong>#{bookingResult.queuePosition}</strong></div>
+                  {formData.message && (
+                    <div className="sd-row"><span>Message</span><strong>{formData.message}</strong></div>
+                  )}
+                </div>
+                {bookingResult.estimatedWaitTimeMinutes > 0 && (
+                  <div className="success-wait">
+                    <span>⏱ Estimated Wait</span>
+                    <strong>{bookingResult.estimatedWaitTimeMinutes} mins</strong>
+                  </div>
+                )}
+                <div className="success-actions">
+                  <button className="btn-done" onClick={closeModal}>Done</button>
+                  <button className="btn-cancel-token" onClick={handleCancelToken}>
+                    Cancel Token
+                  </button>
                 </div>
               </div>
-              <button className="close-btn" onClick={closeModal}>
-                ✕
-              </button>
-            </div>
 
-            <form className="modal-form" onSubmit={handleSubmit}>
-              <div className="form-grid">
-                <input
-                  type="text"
-                  name="fullName"
-                  placeholder="Full Name"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                />
+            ) : (
 
-                <input
-                  type="tel"
-                  name="mobile"
-                  placeholder="Mobile Number"
-                  value={formData.mobile}
-                  onChange={handleChange}
-                  required
-                />
+              /* ── BOOKING FORM ─────────────────────── */
+              <>
+                {/* MODAL HEADER */}
+                <div className="modal-header">
+                  <div className="mh-left">
+                    <div className="mh-icon">🏛️</div>
+                    <div>
+                      <h3>Book Government Token</h3>
+                      <p>
+                        {selectedService.name} —{" "}
+                        {officeName ? decodeURIComponent(officeName) : `Office ${officeId}`}
+                      </p>
+                    </div>
+                  </div>
+                  <button className="close-btn" onClick={closeModal}>✕</button>
+                </div>
 
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email Address"
-                  value={formData.email}
-                  onChange={handleChange}
-                />
+                {/* SERVICE INFO STRIP */}
+                <div className="modal-service-strip">
+                  <div className="mss-item">
+                    <span>Counter</span>
+                    <strong>{selectedService.counter || "—"}</strong>
+                  </div>
+                  <div className="mss-divider" />
+                  <div className="mss-item">
+                    <span>Timing</span>
+                    <strong>{selectedService.timing || "—"}</strong>
+                  </div>
+                  <div className="mss-divider" />
+                  <div className="mss-item">
+                    <span>Avg. Time</span>
+                    <strong>{selectedService.avgServiceTimeMinutes ?? "—"} mins</strong>
+                  </div>
+                </div>
 
-                <input
-                  type="text"
-                  name="documentId"
-                  placeholder="Document / Application ID"
-                  value={formData.documentId}
-                  onChange={handleChange}
-                />
+                <form className="modal-form" onSubmit={handleSubmit}>
 
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleChange}
-                  required
-                />
+                  {errorMessage && (
+                    <div className="error-msg">
+                      <span>⚠</span> {errorMessage}
+                    </div>
+                  )}
 
-                <input
-                  type="time"
-                  name="time"
-                  value={formData.time}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+                  {/* SECTION — Personal */}
+                  <div className="form-section-label">Personal Information</div>
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label>Full Name <span className="req">*</span></label>
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleChange}
+                        placeholder="John Doe"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Email Address <span className="req">*</span></label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="you@example.com"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Phone Number <span className="req">*</span></label>
+                      <input
+                        type="tel"
+                        name="phoneNumber"
+                        value={formData.phoneNumber}
+                        onChange={handleChange}
+                        placeholder="10-digit mobile number"
+                        pattern="[0-9]{10}"
+                        maxLength={10}
+                        required
+                      />
+                    </div>
+                  </div>
 
-              <textarea
-                rows="2"
-                name="notes"
-                placeholder="Purpose or Additional Notes"
-                value={formData.notes}
-                onChange={handleChange}
-              ></textarea>
+                  {/* SECTION — Appointment */}
+                  <div className="form-section-label" style={{ marginTop: "16px" }}>
+                    Appointment Details
+                  </div>
+                  <div className="form-grid">
+                    <div className="form-group">
+                      <label>Date <span className="req">*</span></label>
+                      <input
+                        type="date"
+                        name="date"
+                        value={formData.date}
+                        min={new Date().toISOString().split("T")[0]}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Preferred Time <span className="req">*</span></label>
+                      <input
+                        type="time"
+                        name="time"
+                        value={formData.time}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                  </div>
 
-              <div className="modal-actions">
-                <button
-                  type="button"
-                  className="cancel-btn"
-                  onClick={closeModal}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="confirm-btn">
-                  Confirm Booking
-                </button>
-              </div>
-            </form>
+                  <div className="form-group" style={{ marginTop: "4px" }}>
+                    <label>
+                      Message
+                      <span className="opt"> — Optional</span>
+                    </label>
+                    <textarea
+                      name="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      placeholder="Purpose of visit or any additional information..."
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="modal-actions">
+                    <button
+                      type="button"
+                      className="cancel-btn"
+                      onClick={closeModal}
+                      disabled={bookingLoading}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="confirm-btn"
+                      disabled={bookingLoading}
+                    >
+                      {bookingLoading ? (
+                        <><span className="btn-spinner" /> Booking...</>
+                      ) : (
+                        "Confirm Booking"
+                      )}
+                    </button>
+                  </div>
+
+                </form>
+              </>
+            )}
+
           </div>
         </div>
       )}
+
     </div>
   );
 };
