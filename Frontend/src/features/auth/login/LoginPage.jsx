@@ -20,7 +20,7 @@ function LoginPage({ onLogin }) {
     let errors = {};
 
     if (!usernameOrEmail || usernameOrEmail.length < 3) {
-      errors.usernameOrEmail = "Username or Email must be at least 3 characters";
+      errors.usernameOrEmail = "Username must be at least 3 characters";
     }
     if (!password || password.length < 6) {
       errors.password = "Password must be at least 6 characters";
@@ -87,7 +87,7 @@ function LoginPage({ onLogin }) {
     } catch (error) {
       return {
         success: false,
-        errors: { password: "Server error. Make sure backend is running." },
+        errors: { password: "Invalid credentials." },
       };
     }
   };
