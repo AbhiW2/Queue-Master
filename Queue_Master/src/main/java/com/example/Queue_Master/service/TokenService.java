@@ -1,4 +1,3 @@
-
 package com.example.Queue_Master.service;
 
 import com.example.Queue_Master.dto.QueueStatusResponse;
@@ -22,9 +21,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Slf4j
@@ -71,6 +73,12 @@ public class TokenService {
                     "Dr. " + doctor.getName() + " is not available.");
         }
 
+        // ── TIMING VALIDATION (all dates) ────────────────────
+        validateServiceTiming(
+                doctor.getTiming(),
+                "Dr. " + doctor.getName()
+        );
+
         boolean alreadyBooked = tokenRepository.existsActiveTokenForUserAndDoctor(
                 user.getId(), doctor.getId(), request.getBookingDate());
         if (alreadyBooked) {
@@ -84,7 +92,6 @@ public class TokenService {
         String display    = buildDisplayToken("D", nextNumber);
         int tokensAhead   = nextNumber - 1;
 
-        // FIX 1: avgConsultationTime is primitive int, cannot compare to null
         int avgTime       = doctor.getAvgConsultationTime() > 0
                 ? doctor.getAvgConsultationTime() : 10;
         int estimatedWait = tokensAhead * avgTime;
@@ -120,6 +127,12 @@ public class TokenService {
                     "Service '" + branchService.getName() + "' is unavailable.");
         }
 
+        // ── TIMING VALIDATION (all dates) ────────────────────
+        validateServiceTiming(
+                branchService.getTiming(),
+                branchService.getName()
+        );
+
         boolean alreadyBooked = tokenRepository.existsActiveTokenForUserAndBranchService(
                 user.getId(), branchService.getId(), request.getBookingDate());
         if (alreadyBooked) {
@@ -129,11 +142,16 @@ public class TokenService {
         }
 
         Branch branch     = branchService.getBranch();
+        String prefix     = getPrefixFromCategory(branch);
         int nextNumber    = getNextBranchServiceTokenNumber(
                 branchService.getId(), request.getBookingDate());
-        String display    = buildDisplayToken("BS", nextNumber);
+        String display    = buildDisplayToken(prefix, nextNumber);
         int tokensAhead   = nextNumber - 1;
-        int estimatedWait = tokensAhead * 10;
+
+        int avgTime       = branchService.getAvgServiceTimeMinutes() != null
+                && branchService.getAvgServiceTimeMinutes() > 0
+                ? branchService.getAvgServiceTimeMinutes() : 10;
+        int estimatedWait = tokensAhead * avgTime;
 
         Token token = Token.builder()
                 .tokenNumber(nextNumber)
@@ -306,6 +324,116 @@ public class TokenService {
         }
     }
 
+    // ── TIMING VALIDATION ────────────────────────────────────
+
+    private void validateServiceTiming(String timing, String serviceName) {
+        if (timing == null || timing.isBlank()) {
+            log.warn("No timing set for: {} — skipping timing check", serviceName);
+            return;
+        }
+
+        // Skip if 24 hrs service
+        String lower = timing.toLowerCase().replace(" ", "");
+        if (lower.contains("24") || lower.contains("always") || lower.contains("allday")) {
+            log.info("{} is 24hrs — no timing restriction", serviceName);
+            return;
+        }
+
+        try {
+            String normalized = timing
+                    .replace(" ", "")
+                    .replace("–", "-")
+                    .replace("—", "-")
+                    .toUpperCase();
+
+            String[] parts = normalized.split("-");
+            if (parts.length != 2) {
+                log.warn("Could not parse timing '{}' for {} — skipping",
+                        timing, serviceName);
+                return;
+            }
+
+            LocalTime openTime  = parseTime(parts[0]);
+            LocalTime closeTime = parseTime(parts[1]);
+            LocalTime now       = LocalTime.now();
+
+            log.info("Timing check for {}: open={}, close={}, now={}",
+                    serviceName, openTime, closeTime, now);
+
+            if (now.isBefore(openTime)) {
+                throw new TokenBookingException(
+                        serviceName + " is not open yet. " +
+                                "Service hours are " + parts[0] + " – " + parts[1] + ". " +
+                                "Please book during service hours."
+                );
+            }
+
+            if (now.isAfter(closeTime)) {
+                throw new TokenBookingException(
+                        serviceName + " is closed. " +
+                                "Service hours are " + parts[0] + " – " + parts[1] + ". " +
+                                "Please book during service hours."
+                );
+            }
+
+        } catch (TokenBookingException e) {
+            throw e;
+        } catch (Exception e) {
+            log.warn("Timing parse failed for '{}': {} — skipping check",
+                    timing, e.getMessage());
+        }
+    }
+
+    // ── PARSE TIME STRING ─────────────────────────────────────
+
+    private LocalTime parseTime(String timeStr) {
+        timeStr = timeStr.trim().toUpperCase();
+
+        if (timeStr.contains(":")) {
+            if (timeStr.endsWith("AM") || timeStr.endsWith("PM")) {
+                // e.g. 9:00AM or 9:30PM
+                DateTimeFormatter f = DateTimeFormatter.ofPattern("h:mma")
+                        .withLocale(java.util.Locale.ENGLISH);
+                return LocalTime.parse(timeStr, f);
+            } else {
+                // e.g. 09:00 or 17:30 (24hr)
+                return LocalTime.parse(timeStr,
+                        DateTimeFormatter.ofPattern("HH:mm"));
+            }
+        } else {
+            if (timeStr.endsWith("AM") || timeStr.endsWith("PM")) {
+                // e.g. 9AM or 5PM
+                String hourStr = timeStr.replace("AM", "").replace("PM", "");
+                int hour = Integer.parseInt(hourStr);
+                if (timeStr.endsWith("PM") && hour != 12) hour += 12;
+                if (timeStr.endsWith("AM") && hour == 12) hour = 0;
+                return LocalTime.of(hour, 0);
+            } else {
+                // plain number e.g. "9" or "17"
+                return LocalTime.of(Integer.parseInt(timeStr), 0);
+            }
+        }
+    }
+
+    // ── PREFIX FROM CATEGORY ─────────────────────────────────
+
+    private String getPrefixFromCategory(Branch branch) {
+        try {
+            String code = branch.getCategory().getCode().toUpperCase();
+            return switch (code) {
+                case "BANK" -> "BS";   // Bank Service   → BS001
+                case "GOVT" -> "GS";   // Govt Service   → GS001
+                case "HOTL" -> "HS";   // Hotel Service  → HS001
+                case "HOSP" -> "MS";   // Hospital Misc  → MS001
+                default     -> "T";    // fallback       → T001
+            };
+        } catch (Exception e) {
+            log.warn("Could not determine category prefix, using T: {}",
+                    e.getMessage());
+            return "T";
+        }
+    }
+
     // ── HELPERS ──────────────────────────────────────────────
 
     private String buildDisplayToken(String prefix, int number) {
@@ -333,11 +461,11 @@ public class TokenService {
                 .branchName(branch.getName())
                 .branchLocation(branch.getLocation())
                 .userId(user.getId())
-                // FIX 2 & 3: User entity uses getUsername() not getName()
                 .userName(user.getUsername())
                 .bookedAt(token.getCreatedAt())
                 .message("Token booked! Your number is " + token.getDisplayToken()
-                        + ". Estimated wait: " + token.getEstimatedWaitTimeMinutes() + " min.")
+                        + ". Estimated wait: "
+                        + token.getEstimatedWaitTimeMinutes() + " min.")
                 .build();
     }
 
@@ -362,11 +490,11 @@ public class TokenService {
                 .branchName(branch.getName())
                 .branchLocation(branch.getLocation())
                 .userId(user.getId())
-                // FIX 2 & 3: User entity uses getUsername() not getName()
                 .userName(user.getUsername())
                 .bookedAt(token.getCreatedAt())
                 .message("Token booked! Your number is " + token.getDisplayToken()
-                        + ". Estimated wait: " + token.getEstimatedWaitTimeMinutes() + " min.")
+                        + ". Estimated wait: "
+                        + token.getEstimatedWaitTimeMinutes() + " min.")
                 .build();
     }
 
