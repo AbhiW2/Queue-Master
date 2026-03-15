@@ -14,6 +14,7 @@ import BankServices from "../features/user/pages/BankServices";
 import GovtOfficeList from "../features/user/pages/GovtOfficeList";
 import GovernmentServices from "../features/user/pages/GovermentServices";
 import Hotel from "../features/user/pages/HotelList";
+import HotelServices from "../features/user/pages/HotelServices";
 import QueueStatus from "../features/user/pages/QueueStatus";
 import TicketHistory from "../features/user/pages/TicketHistory";
 import EstimatedWait from "../features/user/pages/EstimatedWait";
@@ -46,6 +47,7 @@ const AppRoutes = () => {
         <Route path="/government-offices" element={<GovtOfficeList />} />
         <Route path="/government-offices/:officeId/services" element={<GovernmentServices />} />
         <Route path="/hotels" element={<Hotel />} />
+       <Route path="/hotels/:hotelId/services" element={<HotelServices />} />
       </Routes>
     </BrowserRouter>
   );
