@@ -22,6 +22,7 @@ import Appointments from "../features/user/pages/Appointments";
 import ViewQueue from "../features/staff/pages/ViewQueue";
 import ManageCounters from "../features/admin/pages/ManageCounter";
 import ServicesAndQueues from "../features/admin/pages/ServicesAndQueues";
+import SuperAdminDashboard from "../features/superadmin/pages/SuperAdminDashboard";
 const AppRoutes = () => {
   return (
     <BrowserRouter>
@@ -47,7 +48,8 @@ const AppRoutes = () => {
         <Route path="/government-offices" element={<GovtOfficeList />} />
         <Route path="/government-offices/:officeId/services" element={<GovernmentServices />} />
         <Route path="/hotels" element={<Hotel />} />
-       <Route path="/hotels/:hotelId/services" element={<HotelServices />} />
+        <Route path="/hotels/:hotelId/services" element={<HotelServices />} />
+        <Route path="/super-admin-dashboard" element={<SuperAdminDashboard />} />
       </Routes>
     </BrowserRouter>
   );

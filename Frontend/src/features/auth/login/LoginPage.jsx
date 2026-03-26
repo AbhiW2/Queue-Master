@@ -1,5 +1,3 @@
-
-
 import { useState, useActionState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./LoginPage.scss";
@@ -7,9 +5,9 @@ import "./LoginPage.scss";
 function LoginPage({ onLogin }) {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+  const [showModal,    setShowModal]    = useState(false);
   const [generatedOtp, setGeneratedOtp] = useState("");
-  const [step, setStep] = useState(1);
+  const [step,         setStep]         = useState(1);
 
   const loginAction = async (prevState, formData) => {
     const usernameOrEmail = formData.get("usernameOrEmail");
@@ -32,26 +30,24 @@ function LoginPage({ onLogin }) {
       return { success: false, errors };
     }
 
-    // ── API Call to Spring Boot ──────────────────────
+    // ── API Call ─────────────────────────────────────
     try {
       const response = await fetch("http://localhost:8080/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          usernameOrEmail: usernameOrEmail, // ← matches Spring Boot LoginRequest
-          password:        password,
+        method  : "POST",
+        headers : { "Content-Type": "application/json" },
+        body    : JSON.stringify({
+          usernameOrEmail,
+          password,
         }),
       });
 
       const data = await response.json();
 
-      // ── If login failed ──────────────────────────
+      // ── Login failed ─────────────────────────────
       if (!response.ok) {
         return {
           success: false,
-          errors: { password: data || "Invalid username/email or password" },
+          errors: { password: data?.message || "Invalid username or password" },
         };
       }
 
@@ -59,45 +55,49 @@ function LoginPage({ onLogin }) {
       if (data.role.toUpperCase() !== role.toUpperCase()) {
         return {
           success: false,
-          errors: { role: `This account is not a ${role} account` },
+          errors: {
+            role: `This account is not a ${role} account. Your role is ${data.role}.`
+          },
         };
       }
 
-      // ── Save everything to localStorage ──────────
-      localStorage.setItem("token",    data.token);     // JWT token
+      // ── Save to localStorage ──────────────────────
+      localStorage.setItem("token",    data.token);
       localStorage.setItem("userId",   data.userId);
       localStorage.setItem("username", data.username);
       localStorage.setItem("email",    data.email);
       localStorage.setItem("role",     data.role);
 
-      // ── Notify parent component ───────────────────
+      // ── Notify parent ─────────────────────────────
       if (onLogin) onLogin(data.role);
 
       // ── Redirect based on role ────────────────────
-      if (data.role === "ADMIN") {
-        navigate("/admin/dashboard");
+      if (data.role === "SUPER_ADMIN") {
+        navigate("/super-admin-dashboard");      // ✅ Super Admin
+      } else if (data.role === "ADMIN") {
+        navigate("/admin/dashboard");            // ✅ Admin
       } else if (data.role === "STAFF") {
-        navigate("/staff/dashboard");
+        navigate("/staff/dashboard");            // ✅ Staff
       } else {
-        navigate("/Userdashboard");
+        navigate("/UserDashboard");              // ✅ User
       }
 
       return { success: true, errors: {} };
 
     } catch (error) {
       return {
-        success: false,
-        errors: { password: "Invalid credentials." },
+        success : false,
+        errors  : { password: "Server error. Please try again." },
       };
     }
   };
 
   const [state, formAction] = useActionState(loginAction, {
     success: false,
-    errors: {},
+    errors : {},
   });
 
-  // OTP (UI Only — no backend yet)
+  // ── OTP (UI only — no backend yet) ────────────────
   const handleSendOtp = (email) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedOtp(otp);
@@ -122,7 +122,7 @@ function LoginPage({ onLogin }) {
 
         <form action={formAction}>
 
-          {/* Role Selector */}
+          {/* ── ROLE SELECTOR ──────────────────────── */}
           <div className="role-selector top-role-selector">
             <label>
               <input type="radio" name="role" value="USER" defaultChecked />
@@ -136,23 +136,27 @@ function LoginPage({ onLogin }) {
               <input type="radio" name="role" value="ADMIN" />
               Admin
             </label>
+            <label>
+              <input type="radio" name="role" value="SUPER_ADMIN" />
+              Super Admin
+            </label>
           </div>
           {state.errors.role && (
-            <div style={{ color: "red" }}>{state.errors.role}</div>
+            <div className="error-text">{state.errors.role}</div>
           )}
 
-          {/* Username or Email */}
+          {/* ── USERNAME OR EMAIL ───────────────────── */}
           <input
             className="email-field"
-            name="usernameOrEmail"         
-            type="text"                    
+            name="usernameOrEmail"
+            type="text"
             placeholder="Enter Username or Email"
           />
           {state.errors.usernameOrEmail && (
-            <div style={{ color: "red" }}>{state.errors.usernameOrEmail}</div>
+            <div className="error-text">{state.errors.usernameOrEmail}</div>
           )}
 
-          {/* Password */}
+          {/* ── PASSWORD ────────────────────────────── */}
           <div className="password-field">
             <input
               name="password"
@@ -167,10 +171,13 @@ function LoginPage({ onLogin }) {
             </span>
           </div>
           {state.errors.password && (
-            <div style={{ color: "red" }}>{state.errors.password}</div>
+            <div className="error-text">{state.errors.password}</div>
           )}
 
-          <p className="forgot-password" onClick={() => setShowModal(true)}>
+          <p
+            className="forgot-password"
+            onClick={() => setShowModal(true)}
+          >
             Forgot Password?
           </p>
 
@@ -178,7 +185,10 @@ function LoginPage({ onLogin }) {
 
           <p className="switch-text">
             Don't have an account?{" "}
-            <span className="link-text" onClick={() => navigate("/signup")}>
+            <span
+              className="link-text"
+              onClick={() => navigate("/signup")}
+            >
               Sign Up
             </span>
           </p>
@@ -186,7 +196,7 @@ function LoginPage({ onLogin }) {
         </form>
       </div>
 
-      {/* OTP Modal */}
+      {/* ── OTP MODAL ──────────────────────────────── */}
       {showModal && (
         <div className="otp-modal">
           <div className="otp-box">
@@ -200,7 +210,9 @@ function LoginPage({ onLogin }) {
                 />
                 <button
                   onClick={() =>
-                    handleSendOtp(document.getElementById("resetEmail").value)
+                    handleSendOtp(
+                      document.getElementById("resetEmail").value
+                    )
                   }
                 >
                   Send OTP
@@ -209,17 +221,26 @@ function LoginPage({ onLogin }) {
             )}
             {step === 2 && (
               <>
-                <input type="text" placeholder="Enter OTP" id="otpInput" />
+                <input
+                  type="text"
+                  placeholder="Enter OTP"
+                  id="otpInput"
+                />
                 <button
                   onClick={() =>
-                    handleVerifyOtp(document.getElementById("otpInput").value)
+                    handleVerifyOtp(
+                      document.getElementById("otpInput").value
+                    )
                   }
                 >
                   Verify OTP
                 </button>
               </>
             )}
-            <p onClick={() => setShowModal(false)} className="close-modal">
+            <p
+              className="close-modal"
+              onClick={() => { setShowModal(false); setStep(1); }}
+            >
               Cancel
             </p>
           </div>
