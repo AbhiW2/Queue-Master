@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Welcome from "../features/public/Welcome/Welcome";
-import About from "../features/public/Welcome/About";
+import Welcome from "../features/welcome/pages/Welcome";
+import About from "../features/welcome/pages/About";
 import LoginPage from "../features/auth/login/LoginPage";
 import SignUpPage from "../features/auth/signup/SignUpPage";
 import UserDashboard from "../features/user/pages/UserDashboard";
@@ -19,9 +19,9 @@ import QueueStatus from "../features/user/pages/QueueStatus";
 import TicketHistory from "../features/user/pages/TicketHistory";
 import EstimatedWait from "../features/user/pages/EstimatedWait";
 import Appointments from "../features/user/pages/Appointments";
-import ViewQueue from "../features/staff/pages/ViewQueue";
-import ManageCounters from "../features/admin/pages/ManageCounter";
-import ServicesAndQueues from "../features/admin/pages/ServicesAndQueues";
+// import ViewQueue from "../features/staff/pages/ViewQueue";
+// import ManageCounters from "../features/admin/pages/ManageCounter";
+// import ServicesAndQueues from "../features/admin/pages/ServicesAndQueues";
 import SuperAdminDashboard from "../features/superadmin/pages/SuperAdminDashboard";
 const AppRoutes = () => {
   return (
@@ -37,10 +37,10 @@ const AppRoutes = () => {
         <Route path="/estimated-wait" element={<EstimatedWait />} />
         <Route path="/appointments" element={<Appointments />} />
         <Route path="/staff/dashboard" element={<StaffDashboard />} />
-        <Route path="/staff/view-queue" element={<ViewQueue />} />
+        {/* <Route path="/staff/view-queue" element={<ViewQueue />} /> */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/manage-counters" element={<ManageCounters />} />
-        <Route path="/admin/services-and-queues" element={<ServicesAndQueues />} />
+        {/* <Route path="/admin/manage-counters" element={<ManageCounters />} /> */}
+        {/* <Route path="/admin/services-and-queues" element={<ServicesAndQueues />} /> */}
         <Route path="/hospitals" element={<Hospitals />} />
         <Route path="/hospitals/:hospitalId/doctors" element={<DoctorList />} />
         <Route path="/banks" element={<BankList />} />
