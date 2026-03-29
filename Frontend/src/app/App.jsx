@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import AppRoutes from "../app/routes";
-import SplashScreen from "../components/layouts/SplashScreen";
+import SplashScreen from "../features/welcome/components/SplashScreen";
 
 function App(){
 
