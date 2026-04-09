@@ -74,9 +74,9 @@ const ADDoctorsPage = ({ doctors, setModal, setDoctorForm,
                             status: d.status, avgConsultationTime: d.avgConsultationTime
                           });
                           setModal({ type:"doctor", data:d });
-                        }}>✏️</button>
+                        }}>Edit</button>
                       <button className="ad-btn-icon del" title="Delete"
-                        onClick={() => onDelete(d.id)}>🗑️</button>
+                        onClick={() => onDelete(d.id)}>Delete</button>
                     </div>
                   </td>
                 </tr>
