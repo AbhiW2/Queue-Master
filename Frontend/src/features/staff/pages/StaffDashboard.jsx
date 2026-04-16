@@ -150,11 +150,11 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "../styles/StaffDashboard.scss";
 
-import StaffSidebar       from "./StaffSidebar";
-import StaffTopbar        from "./StaffTopbar";
-import StaffSelectorModal from "./StaffSelectorModal";
-import StaffStats         from "./StaffStats";
-import StaffQueuePanel    from "./StaffQueuePanel";
+import StaffSidebar       from "../components/StaffSidebar";
+import StaffTopbar        from "../components/StaffTopbar";
+import StaffSelectorModal from "../components/StaffSelectorModal";
+import StaffStats         from "../components/StaffStats";
+import StaffQueuePanel    from "../components/StaffQueuePanel";
 
 const API = "http://localhost:8080/api/staff";
 
