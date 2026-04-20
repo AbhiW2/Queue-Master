@@ -1,106 +1,3 @@
-// import React from "react";
-// import StaffTokenCard from "./StaffTokenCard";
-
-// const StaffQueuePanel = ({ queue, loading, onComplete, onSkip, onNoShow }) => {
-
-//   const active    = queue.filter(t => t.status === "IN_PROGRESS");
-//   const waiting   = queue.filter(t => t.status === "BOOKED");
-//   const done      = queue.filter(t =>
-//     ["COMPLETED","CANCELLED","NO_SHOW","SKIPPED"].includes(t.status));
-
-//   if (loading) {
-//     return (
-//       <div className="sf-queue-card">
-//         <div className="sf-loading">
-//           <div className="sf-spinner"/>
-//           Loading queue...
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   if (queue.length === 0) {
-//     return (
-//       <div className="sf-queue-card">
-//         <div className="sf-empty">
-//           <div className="sf-empty-icon">🎫</div>
-//           No tokens in queue for today
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div style={{ display:"flex", flexDirection:"column", gap:"16px" }}>
-
-//       {/* Currently Serving */}
-//       {active.length > 0 && (
-//         <div className="sf-queue-card">
-//           <div className="sf-queue-card-head">
-//             <div>
-//               <h3>▶ Currently Serving</h3>
-//               <p>{active.length} token in progress</p>
-//             </div>
-//           </div>
-//           <div className="sf-tokens-list">
-//             {active.map(t => (
-//               <StaffTokenCard
-//                 key={t.tokenId} token={t}
-//                 onComplete={onComplete} onSkip={onSkip} onNoShow={onNoShow}
-//               />
-//             ))}
-//           </div>
-//         </div>
-//       )}
-
-//       {/* Waiting */}
-//       {waiting.length > 0 && (
-//         <div className="sf-queue-card">
-//           <div className="sf-queue-card-head">
-//             <div>
-//               <h3>⏳ Waiting ({waiting.length})</h3>
-//               <p>Tokens waiting to be called</p>
-//             </div>
-//           </div>
-//           <div className="sf-tokens-list">
-//             {waiting.map(t => (
-//               <StaffTokenCard
-//                 key={t.tokenId} token={t}
-//                 onComplete={onComplete} onSkip={onSkip} onNoShow={onNoShow}
-//               />
-//             ))}
-//           </div>
-//         </div>
-//       )}
-
-//       {/* Done */}
-//       {done.length > 0 && (
-//         <div className="sf-queue-card">
-//           <div className="sf-queue-card-head">
-//             <div>
-//               <h3>✅ Completed / Done ({done.length})</h3>
-//               <p>Finished tokens today</p>
-//             </div>
-//           </div>
-//           <div className="sf-tokens-list">
-//             {done.map(t => (
-//               <StaffTokenCard
-//                 key={t.tokenId} token={t}
-//                 onComplete={onComplete} onSkip={onSkip} onNoShow={onNoShow}
-//               />
-//             ))}
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default StaffQueuePanel;
-
-
-
-
 
 import React from "react";
 import StaffTokenCard from "./StaffTokenCard";
@@ -114,10 +11,10 @@ const StaffQueuePanel = ({ queue, loading, onComplete, onSkip, onNoShow }) => {
 
   if (loading) {
     return (
-      <div className="sf-queue-card">
+      <div className="sf-card">
         <div className="sf-loading">
           <div className="sf-spinner" />
-          Loading queue...
+          <span>Loading queue...</span>
         </div>
       </div>
     );
@@ -125,24 +22,28 @@ const StaffQueuePanel = ({ queue, loading, onComplete, onSkip, onNoShow }) => {
 
   if (queue.length === 0) {
     return (
-      <div className="sf-queue-card">
+      <div className="sf-card">
         <div className="sf-empty">
           <div className="sf-empty-icon">🎫</div>
-          No tokens in queue for today
+          <p>No tokens in queue for today</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+    <div className="sf-queue-sections">
 
+      {/* ── IN PROGRESS ───────────────────────────────── */}
       {active.length > 0 && (
-        <div className="sf-queue-card">
-          <div className="sf-queue-card-head">
-            <div>
-              <h3>▶ Currently Serving</h3>
-              <p>{active.length} token in progress</p>
+        <div className="sf-card sf-card--active">
+          <div className="sf-card-head">
+            <div className="sf-card-head-left">
+              <span className="sf-card-head-dot active" />
+              <div>
+                <h3>Currently Serving</h3>
+                <p>{active.length} token in progress</p>
+              </div>
             </div>
           </div>
           <div className="sf-tokens-list">
@@ -156,13 +57,18 @@ const StaffQueuePanel = ({ queue, loading, onComplete, onSkip, onNoShow }) => {
         </div>
       )}
 
+      {/* ── WAITING ───────────────────────────────────── */}
       {waiting.length > 0 && (
-        <div className="sf-queue-card">
-          <div className="sf-queue-card-head">
-            <div>
-              <h3>⏳ Waiting ({waiting.length})</h3>
-              <p>Tokens waiting to be called</p>
+        <div className="sf-card">
+          <div className="sf-card-head">
+            <div className="sf-card-head-left">
+              <span className="sf-card-head-dot waiting" />
+              <div>
+                <h3>Waiting Queue</h3>
+                <p>{waiting.length} token{waiting.length !== 1 ? "s" : ""} in line</p>
+              </div>
             </div>
+            <span className="sf-queue-count">{waiting.length}</span>
           </div>
           <div className="sf-tokens-list">
             {waiting.map(t => (
@@ -175,12 +81,16 @@ const StaffQueuePanel = ({ queue, loading, onComplete, onSkip, onNoShow }) => {
         </div>
       )}
 
+      {/* ── DONE ──────────────────────────────────────── */}
       {done.length > 0 && (
-        <div className="sf-queue-card">
-          <div className="sf-queue-card-head">
-            <div>
-              <h3>✅ Completed / Done ({done.length})</h3>
-              <p>Finished tokens today</p>
+        <div className="sf-card sf-card--muted">
+          <div className="sf-card-head">
+            <div className="sf-card-head-left">
+              <span className="sf-card-head-dot done" />
+              <div>
+                <h3>Completed / Done</h3>
+                <p>{done.length} finished today</p>
+              </div>
             </div>
           </div>
           <div className="sf-tokens-list">
