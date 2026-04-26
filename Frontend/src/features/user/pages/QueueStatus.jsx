@@ -1,3 +1,5 @@
+
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/QueueStatus.scss";
@@ -14,15 +16,14 @@ const QueueStatus = () => {
     const [lastUpdated, setLastUpdated]     = useState(null);
 
     const userId = localStorage.getItem("userId");
-    const token  = localStorage.getItem("token");
-    const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
+    const getAuthHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
 
     const loadActiveTokens = async () => {
         if (!userId) { navigate("/login"); return []; }
         try {
             const res = await axios.get(
                 `http://localhost:8080/api/v1/tokens/user/${userId}/active`,
-                authHeaders
+                { headers: getAuthHeaders() }
             );
             return res.data || [];
         } catch (err) {
