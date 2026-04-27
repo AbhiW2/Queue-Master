@@ -19,9 +19,12 @@ const Appointments = () => {
   const [cancelling,   setCancelling]   = useState(null); // tokenId being cancelled
   const [lastUpdated,  setLastUpdated]  = useState(null);
 
-  const userId      = localStorage.getItem("userId");
-  const token       = localStorage.getItem("token");
-  const authHeaders = { headers: { Authorization: `Bearer ${token}` } };
+  const userId = localStorage.getItem("userId");
+
+  // Always read token fresh — prevents "Bearer null" on first render
+  const getAuthHeaders = () => ({
+    Authorization: `Bearer ${localStorage.getItem("token")}`
+  });
 
   // ── Fetch full history (active + past) ────────────────
   const fetchAppointments = async () => {
@@ -29,7 +32,7 @@ const Appointments = () => {
     try {
       const res  = await fetch(
         `http://localhost:8080/api/v1/tokens/user/${userId}/history`,
-        authHeaders
+        { headers: getAuthHeaders() }
       );
       const data = res.ok ? await res.json() : [];
       setAllTokens(data);
@@ -52,7 +55,7 @@ const Appointments = () => {
     try {
       await fetch(
         `http://localhost:8080/api/v1/tokens/${tokenId}/cancel?userId=${userId}`,
-        { method: "DELETE", headers: authHeaders }
+        { method: "DELETE", headers: getAuthHeaders() }
       );
       await fetchAppointments(); // refresh list
     } catch (err) {
