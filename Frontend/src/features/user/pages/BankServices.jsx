@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
@@ -25,12 +24,12 @@ const BankServices = () => {
     message     : "",
   });
 
-  const userId      = localStorage.getItem("userId");
-  const token       = localStorage.getItem("token");
-  const authHeaders = {
+  const userId = localStorage.getItem("userId");
+
+  const getAuthHeaders = () => ({
     "Content-Type": "application/json",
-    Authorization : `Bearer ${token}`
-  };
+    Authorization : `Bearer ${localStorage.getItem("token")}`
+  });
 
   useEffect(() => {
     if (!branchId) return;
@@ -70,9 +69,83 @@ const BankServices = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ── Parse "HH:MM AM/PM – HH:MM AM/PM" → { openMin, closeMin } ──
+  const parseServiceTiming = (timingStr) => {
+    if (!timingStr) return null;
+    const lower = timingStr.toLowerCase().replace(/\s+/g, "");
+    if (lower.includes("24") || lower.includes("always") || lower.includes("allday")) return null; // no restriction
+    const norm  = timingStr.replace(/\s+/g, "").replace(/[–—]/g, "-").toUpperCase();
+    const sep   = norm.includes("-") ? "-" : "TO";
+    const parts = norm.split(sep);
+    if (parts.length !== 2) return null;
+    const toMin = (t) => {
+      t = t.trim();
+      const pm  = t.endsWith("PM");
+      const am  = t.endsWith("AM");
+      t = t.replace("AM", "").replace("PM", "");
+      const [hh, mm = 0] = t.split(":").map(Number);
+      let hrs = hh;
+      if (pm && hrs !== 12) hrs += 12;
+      if (am && hrs === 12) hrs = 0;
+      return hrs * 60 + mm;
+    };
+    return { openMin: toMin(parts[0]), closeMin: toMin(parts[1]) };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!userId) { setErrorMessage("Please log in to book a token."); return; }
+
+    const today   = new Date().toISOString().split("T")[0];
+    const maxDate = new Date();
+    maxDate.setDate(maxDate.getDate() + 5);
+    const maxStr  = maxDate.toISOString().split("T")[0];
+
+    // ── Bug 3: date range guard ───────────────────────────
+    if (formData.date < today) {
+      setErrorMessage("Cannot book a token for a past date.");
+      return;
+    }
+    if (formData.date > maxStr) {
+      setErrorMessage("Advance booking is limited to 5 days from today.");
+      return;
+    }
+
+    // ── Bug 4: time validation ────────────────────────────
+    if (formData.time) {
+      const [h, m]      = formData.time.split(":").map(Number);
+      const slotMinutes = h * 60 + m;
+
+      // Block past times when booking for today
+      if (formData.date === today) {
+        const now        = new Date();
+        const nowMinutes = now.getHours() * 60 + now.getMinutes();
+        if (slotMinutes <= nowMinutes) {
+          const nowStr = now.getHours().toString().padStart(2, "0") + ":" + now.getMinutes().toString().padStart(2, "0");
+          setErrorMessage(
+            `Time ${formData.time} has already passed. Current time is ${nowStr}. Please select a future time.`
+          );
+          return;
+        }
+      }
+
+      // Block times outside service working hours
+      const hours = parseServiceTiming(selectedService.timing);
+      if (hours) {
+        if (slotMinutes < hours.openMin) {
+          setErrorMessage(
+            `Selected time ${formData.time} is before service opens. Working hours: ${selectedService.timing}`
+          );
+          return;
+        }
+        if (slotMinutes > hours.closeMin) {
+          setErrorMessage(
+            `Selected time ${formData.time} is after service closes. Working hours: ${selectedService.timing}`
+          );
+          return;
+        }
+      }
+    }
 
     const payload = {
       queueType       : "BRANCH_SERVICE",
@@ -90,7 +163,7 @@ const BankServices = () => {
       const res = await axios.post(
         "http://localhost:8080/api/v1/tokens/book",
         payload,
-        { headers: authHeaders }
+        { headers: getAuthHeaders() }
       );
       setBookingResult(res.data);
     } catch (err) {
@@ -110,7 +183,7 @@ const BankServices = () => {
     try {
       await axios.delete(
         `http://localhost:8080/api/v1/tokens/${bookingResult.tokenId}/cancel?userId=${userId}`,
-        { headers: authHeaders }
+        { headers: getAuthHeaders() }
       );
       closeModal();
     } catch (err) {
@@ -313,6 +386,7 @@ const BankServices = () => {
                         name="date"
                         value={formData.date}
                         min={new Date().toISOString().split("T")[0]}
+                        max={(() => { const d = new Date(); d.setDate(d.getDate() + 5); return d.toISOString().split("T")[0]; })()}
                         onChange={handleChange}
                         required
                       />
@@ -323,6 +397,9 @@ const BankServices = () => {
                         type="time"
                         name="time"
                         value={formData.time}
+                        min={formData.date === new Date().toISOString().split("T")[0]
+                          ? (() => { const n = new Date(Date.now() + 60000); return n.getHours().toString().padStart(2,"0") + ":" + n.getMinutes().toString().padStart(2,"0"); })()
+                          : undefined}
                         onChange={handleChange}
                         required
                       />
