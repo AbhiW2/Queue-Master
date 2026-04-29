@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/TicketHistory.scss";
@@ -16,11 +18,10 @@ const TicketHistory = () => {
   const [lastUpdated,  setLastUpdated]  = useState(null);
 
   const userId      = localStorage.getItem("userId");
-  const token       = localStorage.getItem("token");
-  const authHeaders = {
+  const getAuthHeaders = () => ({
     "Content-Type": "application/json",
-    Authorization : `Bearer ${token}`
-  };
+    Authorization: `Bearer ${localStorage.getItem("token")}`
+  });
 
   // ── Fetch token history ────────────────────────────────
   const fetchHistory = async () => {
@@ -29,7 +30,7 @@ const TicketHistory = () => {
     try {
       const res  = await fetch(
         `http://localhost:8080/api/v1/tokens/user/${userId}/history`,
-        { headers: authHeaders }
+        { headers: getAuthHeaders() }
       );
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
