@@ -2,7 +2,7 @@
 import React from "react";
 import StaffTokenCard from "./StaffTokenCard";
 
-const StaffQueuePanel = ({ queue, loading, onComplete, onSkip, onNoShow }) => {
+const StaffQueuePanel = ({ queue, loading, onComplete, onSkip, onHold, onNoShow }) => {
 
   const active  = queue.filter(t => t.status === "IN_PROGRESS");
   const waiting = queue.filter(t => t.status === "BOOKED");
@@ -34,7 +34,7 @@ const StaffQueuePanel = ({ queue, loading, onComplete, onSkip, onNoShow }) => {
   return (
     <div className="sf-queue-sections">
 
-      {/* ── IN PROGRESS ───────────────────────────────── */}
+      {/* IN PROGRESS */}
       {active.length > 0 && (
         <div className="sf-card sf-card--active">
           <div className="sf-card-head">
@@ -45,19 +45,21 @@ const StaffQueuePanel = ({ queue, loading, onComplete, onSkip, onNoShow }) => {
                 <p>{active.length} token in progress</p>
               </div>
             </div>
+            <span className="sf-queue-badge sf-queue-badge--active">LIVE</span>
           </div>
           <div className="sf-tokens-list">
             {active.map(t => (
               <StaffTokenCard
                 key={t.tokenId} token={t}
-                onComplete={onComplete} onSkip={onSkip} onNoShow={onNoShow}
+                onComplete={onComplete} onSkip={onSkip}
+                onHold={onHold}        onNoShow={onNoShow}
               />
             ))}
           </div>
         </div>
       )}
 
-      {/* ── WAITING ───────────────────────────────────── */}
+      {/* WAITING */}
       {waiting.length > 0 && (
         <div className="sf-card">
           <div className="sf-card-head">
@@ -74,14 +76,15 @@ const StaffQueuePanel = ({ queue, loading, onComplete, onSkip, onNoShow }) => {
             {waiting.map(t => (
               <StaffTokenCard
                 key={t.tokenId} token={t}
-                onComplete={onComplete} onSkip={onSkip} onNoShow={onNoShow}
+                onComplete={onComplete} onSkip={onSkip}
+                onHold={onHold}        onNoShow={onNoShow}
               />
             ))}
           </div>
         </div>
       )}
 
-      {/* ── DONE ──────────────────────────────────────── */}
+      {/* DONE */}
       {done.length > 0 && (
         <div className="sf-card sf-card--muted">
           <div className="sf-card-head">
@@ -97,7 +100,8 @@ const StaffQueuePanel = ({ queue, loading, onComplete, onSkip, onNoShow }) => {
             {done.map(t => (
               <StaffTokenCard
                 key={t.tokenId} token={t}
-                onComplete={onComplete} onSkip={onSkip} onNoShow={onNoShow}
+                onComplete={onComplete} onSkip={onSkip}
+                onHold={onHold}        onNoShow={onNoShow}
               />
             ))}
           </div>
