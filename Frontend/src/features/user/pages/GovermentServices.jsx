@@ -1,3 +1,5 @@
+
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "../styles/ServiceModern.scss";
@@ -19,7 +21,7 @@ const GovernmentServices = () => {
     email       : "",
     phoneNumber : "",
     date        : new Date().toISOString().split("T")[0],
-    time        : "",
+    shift       : "",    // "MORNING" or "AFTERNOON"
     message     : "",
   });
 
@@ -54,7 +56,7 @@ const GovernmentServices = () => {
     setFormData({
       fullName: "", email: "", phoneNumber: "",
       date: new Date().toISOString().split("T")[0],
-      time: "", message: "",
+      shift: "", message: "",
     });
   };
 
@@ -72,17 +74,15 @@ const GovernmentServices = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!userId) { setErrorMessage("Please log in to book a token."); return; }
+    if (!formData.shift) { setErrorMessage("Please select a shift (Morning or Afternoon)."); return; }
 
     const today   = new Date().toISOString().split("T")[0];
     const maxDate = new Date();
-    maxDate.setDate(maxDate.getDate() + 5);
+    maxDate.setDate(maxDate.getDate() + 7);
     const maxStr  = maxDate.toISOString().split("T")[0];
 
     if (formData.date < today) { setErrorMessage("Cannot book a token for a past date."); return; }
-    if (formData.date > maxStr) { setErrorMessage("Advance booking is limited to 5 days from today."); return; }
-
-    // NOTE: Time validation (past-time, outside service hours) is enforced by the backend.
-    // Any error will be returned as a clear message in the form below.
+    if (formData.date > maxStr) { setErrorMessage("Advance booking is limited to 7 days from today."); return; }
 
     const payload = {
       queueType       : "BRANCH_SERVICE",
@@ -90,7 +90,7 @@ const GovernmentServices = () => {
       doctorId        : null,
       userId          : parseInt(userId),
       bookingDate     : formData.date,
-      bookingTime     : formData.time || null   // backend validates timing
+      shift           : formData.shift   // "MORNING" or "AFTERNOON"
     };
 
     setBookingLoading(true);
@@ -101,16 +101,14 @@ const GovernmentServices = () => {
       const res = await fetch("http://localhost:8080/api/v1/tokens/book", {
         method : "POST",
         headers: getAuthHeaders(),
-        body   : JSON.stringify(payload)
+        body   : JSON.stringify(payload),
       });
-
       if (!res.ok) {
         const text = await res.text();
         let msg = `HTTP ${res.status}`;
         try { const j = JSON.parse(text); msg = j.message || j.error || msg; } catch {}
         throw new Error(msg);
       }
-
       const data = await res.json();
       setBookingResult(data);
     } catch (err) {
@@ -123,15 +121,19 @@ const GovernmentServices = () => {
   const handleCancelToken = async () => {
     if (!bookingResult?.tokenId) return;
     try {
-      await fetch(
+      const res = await fetch(
         `http://localhost:8080/api/v1/tokens/${bookingResult.tokenId}/cancel?userId=${userId}`,
         { method: "DELETE", headers: getAuthHeaders() }
       );
+      if (!res.ok) throw new Error("Cancel failed");
       closeModal();
     } catch (err) {
       console.error("Cancel error:", err.message);
     }
   };
+
+  const shiftLabel = (shift) =>
+    shift === "MORNING" ? "Morning (9:00 AM – 1:00 PM)" : "Afternoon (2:00 PM – 5:00 PM)";
 
   return (
     <div className="service-page">
@@ -142,8 +144,8 @@ const GovernmentServices = () => {
         <div className="nav-brand">
           <div className="logo">🏛️</div>
           <div>
-            <h2>Government Service Board</h2>
-            <p>{officeName ? decodeURIComponent(officeName) : `Office ID: ${officeId}`}</p>
+            <h2>{officeName || "Government Services"}</h2>
+            <p>Office ID: {officeId}</p>
           </div>
         </div>
         <div className="navbar-search">
@@ -160,20 +162,22 @@ const GovernmentServices = () => {
           <h3 style={{ padding: "20px" }}>No services found</h3>
         ) : (
           filteredServices.map((s) => (
-            <div key={s.id} className="service-row doctor-board">
-              <div className="doctor-left">
-                <div className="doctor-avatar">{s.name?.charAt(0)}</div>
-                <div className="doctor-info-vertical">
-                  <div className="doctor-name">{s.name}</div>
-                  <div className="doctor-line"><span className="label">Service:</span><span>{s.description}</span></div>
-                  <div className="doctor-line"><span className="label">Counter:</span><span>{s.counter}</span></div>
-                  <div className="doctor-line"><span className="label">Timing:</span><span>{s.timing}</span></div>
-                  <div className="doctor-line"><span className="label">Avg Time:</span><span>{s.avgServiceTimeMinutes ?? "—"} mins</span></div>
+            <div key={s.id} className="service-row">
+              <div className="service-info">
+                <div className="service-name">{s.name}</div>
+                {s.description && <div className="service-desc">{s.description}</div>}
+                <div className="service-meta">
+                  {s.counter && <span>🪧 {s.counter}</span>}
+                  {s.timing  && <span>🕐 {s.timing}</span>}
                 </div>
               </div>
-              <div className="doctor-right">
+              <div className="service-actions">
                 <span className={`status ${s.status?.toLowerCase()}`}>{s.status}</span>
-                <button className="token-btn" disabled={s.status !== "Available"} onClick={() => handleGetToken(s)}>
+                <button
+                  className="token-btn"
+                  disabled={s.status !== "Available" || bookingLoading}
+                  onClick={() => handleGetToken(s)}
+                >
                   Get Token
                 </button>
               </div>
@@ -187,13 +191,12 @@ const GovernmentServices = () => {
         <div className="modal-overlay">
           <div className="modal-card compact">
 
-            {/* SUCCESS CARD */}
             {bookingResult ? (
               <div className="success-card">
                 <div className="success-top">
                   <div className="success-icon">✓</div>
-                  <h3>Booking Confirmed!</h3>
-                  <p>Your token has been booked successfully</p>
+                  <h3>Token Booked!</h3>
+                  <p>Your queue token has been confirmed</p>
                 </div>
                 <div className="success-token-row">
                   <span className="stl">Token Number</span>
@@ -201,16 +204,23 @@ const GovernmentServices = () => {
                 </div>
                 <div className="success-details">
                   <div className="sd-row"><span>Name</span><strong>{formData.fullName}</strong></div>
-                  <div className="sd-row"><span>Email</span><strong>{formData.email}</strong></div>
-                  <div className="sd-row"><span>Phone</span><strong>{formData.phoneNumber}</strong></div>
-                  <div className="sd-row"><span>Service</span><strong>{bookingResult.branchServiceName || selectedService.name}</strong></div>
-                  <div className="sd-row"><span>Office</span><strong>{bookingResult.branchName}</strong></div>
+                  <div className="sd-row"><span>Service</span><strong>{bookingResult.branchServiceName}</strong></div>
+                  <div className="sd-row"><span>Branch</span><strong>{bookingResult.branchName}</strong></div>
                   <div className="sd-row"><span>Date</span><strong>{bookingResult.bookingDate}</strong></div>
-                  <div className="sd-row"><span>Your Slot Time</span><strong>{bookingResult?.scheduledTime || formData.time || "—"}</strong></div>
-                  <div className="sd-row"><span>Queue Position</span><strong>#{(bookingResult?.queuePosition ?? 0) + 1}</strong></div>
-                  {formData.message && (
-                    <div className="sd-row"><span>Message</span><strong>{formData.message}</strong></div>
-                  )}
+                  <div className="sd-row">
+                    <span>Shift</span>
+                    <strong>{bookingResult.shiftLabel || shiftLabel(formData.shift)}</strong>
+                  </div>
+                  <div className="sd-row">
+                    <span>Est. Time Slot</span>
+                    <strong>
+                      {bookingResult.scheduledTime
+                        ? new Date("1970-01-01T" + bookingResult.scheduledTime)
+                            .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                        : "—"}
+                    </strong>
+                  </div>
+                  <div className="sd-row"><span>Queue Position</span><strong>#{(bookingResult.queuePosition ?? 0) + 1}</strong></div>
                 </div>
                 {bookingResult.estimatedWaitTimeMinutes > 0 && (
                   <div className="success-wait">
@@ -225,30 +235,38 @@ const GovernmentServices = () => {
               </div>
 
             ) : (
-
-              /* BOOKING FORM */
               <>
                 <div className="modal-header">
                   <div className="mh-left">
                     <div className="mh-icon">🏛️</div>
                     <div>
-                      <h3>Book Government Token</h3>
-                      <p>{selectedService.name} — {officeName ? decodeURIComponent(officeName) : `Office ${officeId}`}</p>
+                      <h3>Book Service Token</h3>
+                      <p>{selectedService.name}</p>
                     </div>
                   </div>
                   <button className="close-btn" onClick={closeModal}>✕</button>
                 </div>
 
                 <div className="modal-service-strip">
-                  <div className="mss-item"><span>Counter</span><strong>{selectedService.counter || "—"}</strong></div>
+                  {selectedService.counter && (
+                    <div className="mss-item"><span>Counter</span><strong>{selectedService.counter}</strong></div>
+                  )}
                   <div className="mss-divider" />
-                  <div className="mss-item"><span>Timing</span><strong>{selectedService.timing || "—"}</strong></div>
+                  {selectedService.timing && (
+                    <div className="mss-item"><span>Timing</span><strong>{selectedService.timing}</strong></div>
+                  )}
                   <div className="mss-divider" />
-                  <div className="mss-item"><span>Avg. Time</span><strong>{selectedService.avgServiceTimeMinutes ?? "—"} mins</strong></div>
+                  <div className="mss-item">
+                    <span>Avg. Time</span>
+                    <strong>{selectedService.avgServiceTimeMinutes ?? "—"} mins</strong>
+                  </div>
                 </div>
 
                 <form className="modal-form" onSubmit={handleSubmit}>
-                  {errorMessage && <div className="error-msg"><span>⚠</span> {errorMessage}</div>}
+
+                  {errorMessage && (
+                    <div className="error-msg"><span>⚠</span> {errorMessage}</div>
+                  )}
 
                   <div className="form-section-label">Personal Information</div>
                   <div className="form-grid">
@@ -270,29 +288,49 @@ const GovernmentServices = () => {
                     </div>
                   </div>
 
-                  <div className="form-section-label" style={{ marginTop: "16px" }}>Appointment Details</div>
+                  <div className="form-section-label" style={{ marginTop: "16px" }}>Booking Details</div>
                   <div className="form-grid">
                     <div className="form-group">
                       <label>Date <span className="req">*</span></label>
                       <input type="date" name="date" value={formData.date}
                         min={new Date().toISOString().split("T")[0]}
-                        max={(() => { const d = new Date(); d.setDate(d.getDate() + 5); return d.toISOString().split("T")[0]; })()}
+                        max={(() => { const d = new Date(); d.setDate(d.getDate() + 7); return d.toISOString().split("T")[0]; })()}
                         onChange={handleChange} required />
                     </div>
-                    <div className="form-group">
-                      <label>Preferred Time <span className="req">*</span></label>
-                      <input type="time" name="time" value={formData.time}
-                        min={formData.date === new Date().toISOString().split("T")[0]
-                          ? (() => { const n = new Date(Date.now() + 60000); return n.getHours().toString().padStart(2,"0") + ":" + n.getMinutes().toString().padStart(2,"0"); })()
-                          : undefined}
-                        onChange={handleChange} required />
+
+                    <div className="form-group shift-selector-group">
+                      <label>Select Shift <span className="req">*</span></label>
+                      <div className="shift-options">
+                        <label className={`shift-option ${formData.shift === "MORNING" ? "selected" : ""}`}>
+                          <input type="radio" name="shift" value="MORNING"
+                            checked={formData.shift === "MORNING"}
+                            onChange={handleChange} required />
+                          <span className="shift-icon">🌅</span>
+                          <div className="shift-info">
+                            <strong>Morning</strong>
+                            <span>9:00 AM – 1:00 PM</span>
+                            <small>Max 20 tokens</small>
+                          </div>
+                        </label>
+                        <label className={`shift-option ${formData.shift === "AFTERNOON" ? "selected" : ""}`}>
+                          <input type="radio" name="shift" value="AFTERNOON"
+                            checked={formData.shift === "AFTERNOON"}
+                            onChange={handleChange} />
+                          <span className="shift-icon">🌞</span>
+                          <div className="shift-info">
+                            <strong>Afternoon</strong>
+                            <span>2:00 PM – 5:00 PM</span>
+                            <small>Max 15 tokens</small>
+                          </div>
+                        </label>
+                      </div>
                     </div>
                   </div>
 
                   <div className="form-group" style={{ marginTop: "4px" }}>
                     <label>Message <span className="opt"> — Optional</span></label>
                     <textarea name="message" value={formData.message} onChange={handleChange}
-                      placeholder="Purpose of visit or any additional information..." rows={2} />
+                      placeholder="Any additional information or special requests..." rows={2} />
                   </div>
 
                   <div className="modal-actions">
@@ -301,6 +339,7 @@ const GovernmentServices = () => {
                       {bookingLoading ? <><span className="btn-spinner" /> Booking...</> : "Confirm Booking"}
                     </button>
                   </div>
+
                 </form>
               </>
             )}

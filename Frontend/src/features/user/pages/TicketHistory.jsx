@@ -1,29 +1,32 @@
 
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/TicketHistory.scss";
 import {
   FiArrowLeft, FiSearch, FiCheckCircle, FiXCircle,
-  FiClock, FiAlertCircle, FiSkipForward, FiRefreshCw
+  FiClock, FiAlertCircle, FiSkipForward, FiRefreshCw,
+  FiTrash2
 } from "react-icons/fi";
+
+// Statuses that are "active" — deletion NOT allowed
+const ACTIVE_STATUSES = ["BOOKED", "CALLED", "IN_PROGRESS"];
 
 const TicketHistory = () => {
   const navigate = useNavigate();
 
-  const [tokens,       setTokens]       = useState([]);
-  const [loading,      setLoading]      = useState(true);
-  const [search,       setSearch]       = useState("");
-  const [filter,       setFilter]       = useState("All Status");
-  const [lastUpdated,  setLastUpdated]  = useState(null);
+  const [tokens,      setTokens]      = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [search,      setSearch]      = useState("");
+  const [filter,      setFilter]      = useState("All Status");
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [deleting,    setDeleting]    = useState(null);
 
-  const userId      = localStorage.getItem("userId");
+  const userId         = localStorage.getItem("userId");
   const getAuthHeaders = () => ({
     "Content-Type": "application/json",
     Authorization: `Bearer ${localStorage.getItem("token")}`
   });
 
-  // ── Fetch token history ────────────────────────────────
   const fetchHistory = async () => {
     if (!userId) { navigate("/login"); return; }
     setLoading(true);
@@ -46,7 +49,25 @@ const TicketHistory = () => {
 
   useEffect(() => { fetchHistory(); }, []);
 
-  // ── Status config ──────────────────────────────────────
+  const handleDelete = async (tokenId, status) => {
+    if (ACTIVE_STATUSES.includes(status)) return;
+    if (!window.confirm("Remove this token from your history?")) return;
+    setDeleting(tokenId);
+    try {
+      const res = await fetch(
+        `http://localhost:8080/api/v1/tokens/${tokenId}/history?userId=${userId}`,
+        { method: "DELETE", headers: getAuthHeaders() }
+      );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      setTokens(prev => prev.filter(t => t.tokenId !== tokenId));
+    } catch (err) {
+      console.error("Delete error:", err.message);
+      alert("Failed to remove token. Please try again.");
+    } finally {
+      setDeleting(null);
+    }
+  };
+
   const statusConfig = {
     COMPLETED   : { label: "Completed",   icon: <FiCheckCircle  className="icon success"  />, cls: "completed"   },
     CANCELLED   : { label: "Cancelled",   icon: <FiXCircle      className="icon danger"   />, cls: "cancelled"   },
@@ -60,10 +81,8 @@ const TicketHistory = () => {
   const getConfig = (status) =>
     statusConfig[status] || { label: status, icon: <FiClock className="icon warning" />, cls: "unknown" };
 
-  // ── Filter options ─────────────────────────────────────
   const filterOptions = ["All Status", "Completed", "Upcoming", "Cancelled", "Called", "In Progress", "Skipped", "No Show"];
 
-  // ── Filter + search ────────────────────────────────────
   const filtered = tokens.filter((t) => {
     const cfg         = getConfig(t.status);
     const matchSearch =
@@ -71,37 +90,32 @@ const TicketHistory = () => {
       t.doctorName?.toLowerCase().includes(search.toLowerCase())          ||
       t.branchServiceName?.toLowerCase().includes(search.toLowerCase())   ||
       t.branchName?.toLowerCase().includes(search.toLowerCase());
-
-    const matchFilter =
-      filter === "All Status" || cfg.label === filter;
-
+    const matchFilter = filter === "All Status" || cfg.label === filter;
     return matchSearch && matchFilter;
   });
 
-  // ── Service label ──────────────────────────────────────
   const getServiceName = (t) =>
     t.queueType === "DOCTOR"
       ? `Dr. ${t.doctorName || "—"}${t.doctorSpecialization ? ` (${t.doctorSpecialization})` : ""}`
       : t.branchServiceName || "—";
 
-  // ── Format date ────────────────────────────────────────
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
     const d = new Date(dateStr);
     return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
   };
 
-  // ── Status counts ──────────────────────────────────────
   const counts = filterOptions.reduce((acc, opt) => {
     if (opt === "All Status") { acc[opt] = tokens.length; return acc; }
     acc[opt] = tokens.filter((t) => getConfig(t.status).label === opt).length;
     return acc;
   }, {});
 
+  const canDelete = (status) => !ACTIVE_STATUSES.includes(status);
+
   return (
     <div className="ticket-history-page">
 
-      {/* ── NAVBAR ─────────────────────────────────────── */}
       <div className="th-navbar">
         <button className="back-btn" onClick={() => navigate(-1)}>
           <FiArrowLeft /> Back
@@ -110,7 +124,6 @@ const TicketHistory = () => {
         <div className="history-count">{tokens.length} Records</div>
       </div>
 
-      {/* ── SEARCH + FILTER ────────────────────────────── */}
       <div className="history-controls">
         <div className="search-box">
           <FiSearch />
@@ -137,14 +150,18 @@ const TicketHistory = () => {
         </button>
       </div>
 
-      {/* ── LAST UPDATED ───────────────────────────────── */}
       {lastUpdated && (
         <div className="last-updated">
           Last updated: {lastUpdated.toLocaleTimeString()}
         </div>
       )}
 
-      {/* ── HISTORY LIST ───────────────────────────────── */}
+      <div className="delete-hint">
+        <FiTrash2 className="hint-icon" />
+        You can delete completed, cancelled, skipped or no-show tokens.
+        Active tokens (Upcoming / Called / In Progress) cannot be deleted.
+      </div>
+
       <div className="history-list">
         {loading ? (
           <div className="empty-state">
@@ -159,14 +176,13 @@ const TicketHistory = () => {
           </div>
         ) : (
           filtered.map((t, index) => {
-            const cfg = getConfig(t.status);
+            const cfg       = getConfig(t.status);
+            const deletable = canDelete(t.status);
             return (
               <div key={t.tokenId || index} className={`history-card ${cfg.cls}`}>
 
-                {/* TOKEN ID */}
                 <div className="ticket-id">{t.displayToken || "—"}</div>
 
-                {/* INFO */}
                 <div className="ticket-info">
                   <h4>{getServiceName(t)}</h4>
                   <p className="branch-name">{t.branchName || "—"}</p>
@@ -180,10 +196,22 @@ const TicketHistory = () => {
                   </p>
                 </div>
 
-                {/* STATUS */}
                 <div className={`ticket-status ${cfg.cls}`}>
                   {cfg.icon}
                   {cfg.label}
+                </div>
+
+                <div className="ticket-actions">
+                  <button
+                    className={`delete-btn${deletable ? "" : " disabled"}`}
+                    title={deletable ? "Remove from history" : "Active tokens cannot be deleted"}
+                    disabled={!deletable || deleting === t.tokenId}
+                    onClick={() => deletable && handleDelete(t.tokenId, t.status)}
+                  >
+                    {deleting === t.tokenId
+                      ? <FiRefreshCw className="spinning" />
+                      : <FiTrash2 />}
+                  </button>
                 </div>
 
               </div>

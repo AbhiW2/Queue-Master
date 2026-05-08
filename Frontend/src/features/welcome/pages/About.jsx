@@ -37,15 +37,15 @@ const About = () => {
       {/* ===== STATS ===== */}
       <section className="about-stats">
         <div className="stat">
-          <h2>250K+</h2>
+          <h2>100+</h2>
           <p>Tokens Generated</p>
         </div>
         <div className="stat">
-          <h2>120+</h2>
+          <h2>0+</h2>
           <p>Organizations Using QueueMaster</p>
         </div>
         <div className="stat">
-          <h2>40%</h2>
+          <h2>10%</h2>
           <p>Average Waiting Time Reduced</p>
         </div>
         <div className="stat">
@@ -125,7 +125,7 @@ const About = () => {
       <section className="about-cta">
         <h2>Experience the Future of Queue Management</h2>
         <p>Join organizations already delivering smarter service experiences.</p>
-        <button onClick={() => navigate("/dashboard")}>Get Started</button>
+        <button onClick={() => navigate("/login")}>Get Started</button>
       </section>
 
       {/* ===== FOOTER ===== */}
