@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/EstimatedWait.scss";
 import {
   FiArrowLeft, FiClock, FiUsers,
   FiActivity, FiAlertCircle, FiRefreshCw,
-  FiCheckCircle, FiHash
+  FiCheckCircle, FiHash, FiCalendar
 } from "react-icons/fi";
 import axios from "axios";
 
@@ -16,16 +15,15 @@ const EstimatedWait = () => {
   const [queueData,    setQueueData]    = useState({});
   const [loading,      setLoading]      = useState(true);
   const [lastUpdated,  setLastUpdated]  = useState(null);
-  const [selected,     setSelected]     = useState(0); // index of selected token tab
+  const [selected,     setSelected]     = useState(0);
 
-  const userId      = localStorage.getItem("userId");
+  const userId         = localStorage.getItem("userId");
   const getAuthHeaders = () => ({ Authorization: `Bearer ${localStorage.getItem("token")}` });
 
-  // ── Fetch all active tokens + queue status for each ───
   const fetchAll = async () => {
     if (!userId) { navigate("/login"); return; }
     try {
-      const activeRes  = await axios.get(
+      const activeRes = await axios.get(
         `http://localhost:8080/api/v1/tokens/user/${userId}/active`,
         { headers: getAuthHeaders() }
       );
@@ -67,7 +65,6 @@ const EstimatedWait = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // ── Helpers ────────────────────────────────────────────
   const getQueue = (t) => {
     const key = t.queueType === "DOCTOR"
       ? `doctor-${t.doctorId}`
@@ -76,10 +73,17 @@ const EstimatedWait = () => {
   };
 
   const formatTime = (d) => d
-    ? d.toLocaleTimeString("en-IN", {
-        hour: "2-digit", minute: "2-digit", second: "2-digit"
-      })
+    ? d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
     : "";
+
+  // Format a LocalTime string like "09:30:00" → "09:30 AM"
+  const formatLocalTime = (timeStr) => {
+    if (!timeStr) return null;
+    const [h, m] = timeStr.split(":").map(Number);
+    const date = new Date();
+    date.setHours(h, m, 0);
+    return date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+  };
 
   const progressPct = (t, q) => {
     if (!q || !q.totalTokens) return 0;
@@ -100,9 +104,26 @@ const EstimatedWait = () => {
     COMPLETED:   "badge-done",
   }[s] || "badge-waiting");
 
-  // ── Current selected token ─────────────────────────────
-  const t = activeTokens[selected] || null;
-  const q = t ? getQueue(t) : null;
+  // Build headline + sub-text for hero card
+  const buildWaitLabel = (t) => {
+    if (t.status === "CALLED")
+      return { headline: "Your Turn!", sub: "Please proceed to the counter immediately" };
+    if (t.status === "IN_PROGRESS")
+      return { headline: "Being Served", sub: "You are currently being served" };
+
+    const mins      = t.estimatedWaitTimeMinutes ?? 0;
+    const tokenTime = t.scheduledTime ? formatLocalTime(t.scheduledTime) : null;
+    const headline  = `~${mins} min${mins !== 1 ? "s" : ""}`;
+    const sub       = tokenTime
+      ? `Estimated wait · Your token time: ${tokenTime}`
+      : "Approximate time until your turn";
+
+    return { headline, sub, tokenTime, mins };
+  };
+
+  const t        = activeTokens[selected] || null;
+  const q        = t ? getQueue(t) : null;
+  const waitInfo = t ? buildWaitLabel(t) : null;
 
   return (
     <div className="ew-page">
@@ -119,29 +140,23 @@ const EstimatedWait = () => {
         </div>
       </div>
 
-      {/* ── LOADING ────────────────────────────────────── */}
       {loading ? (
         <div className="ew-loading">
           <div className="ew-spinner" />
           <p>Fetching your queue data...</p>
         </div>
 
-      /* ── EMPTY ─────────────────────────────────────── */
       ) : activeTokens.length === 0 ? (
         <div className="ew-empty">
           <div className="ew-empty-icon">🎫</div>
           <h3>No Active Tokens</h3>
           <p>Book a token to see your estimated wait time.</p>
-          <button onClick={() => navigate("/Userdashboard")}>
-            Book a Token
-          </button>
+          <button onClick={() => navigate("/Userdashboard")}>Book a Token</button>
         </div>
 
-      /* ── MAIN ──────────────────────────────────────── */
       ) : (
         <div className="ew-content">
 
-          {/* TOKEN TABS — if multiple bookings */}
           {activeTokens.length > 1 && (
             <div className="ew-tabs">
               {activeTokens.map((tok, i) => (
@@ -151,35 +166,32 @@ const EstimatedWait = () => {
                   onClick={() => setSelected(i)}
                 >
                   {tok.displayToken}
-                  <span className="ew-tab-sub">
-                    {tok.doctorName || tok.branchServiceName}
-                  </span>
+                  <span className="ew-tab-sub">{tok.doctorName || tok.branchServiceName}</span>
                 </button>
               ))}
             </div>
           )}
 
-          {t && (
+          {t && waitInfo && (
             <>
               {/* ── HERO WAIT CARD ────────────────────── */}
               <div className={`ew-hero ${t.status === "CALLED" ? "hero-urgent" : ""}`}>
                 <div className="ew-hero-left">
                   <FiClock className="ew-hero-icon" />
                   <div>
-                    <h1>
-                      {t.status === "CALLED"
-                        ? "Your Turn!"
-                        : t.status === "IN_PROGRESS"
-                        ? "Being Served"
-                        : `${t.estimatedWaitTimeMinutes ?? 0} mins`}
-                    </h1>
-                    <p>
-                      {t.status === "CALLED"
-                        ? "Please proceed to the counter immediately"
-                        : t.status === "IN_PROGRESS"
-                        ? "You are currently being served"
-                        : "Approximate time until your turn"}
-                    </p>
+                    <h1>{waitInfo.headline}</h1>
+                    <p>{waitInfo.sub}</p>
+
+                    {/* Token time pill — shown when scheduledTime exists */}
+                    {waitInfo.tokenTime && (
+                      <div className="ew-time-pill">
+                        <FiCalendar className="ew-time-pill-icon" />
+                        <span>
+                          Token scheduled at&nbsp;<strong>{waitInfo.tokenTime}</strong>
+                          {waitInfo.mins > 0 && <>&nbsp;·&nbsp;~{waitInfo.mins} min wait</>}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="ew-hero-right">
@@ -198,33 +210,23 @@ const EstimatedWait = () => {
               <div className="ew-stats">
 
                 <div className="ew-stat-card">
-                  <div className="ew-stat-icon blue">
-                    <FiUsers />
-                  </div>
+                  <div className="ew-stat-icon blue"><FiUsers /></div>
                   <div className="ew-stat-body">
                     <span className="ew-stat-label">People Ahead</span>
-                    <span className="ew-stat-value">
-                      {t.queuePosition ?? 0}
-                    </span>
+                    <span className="ew-stat-value">{t.queuePosition ?? 0}</span>
                   </div>
                 </div>
 
                 <div className="ew-stat-card">
-                  <div className="ew-stat-icon green">
-                    <FiActivity />
-                  </div>
+                  <div className="ew-stat-icon green"><FiActivity /></div>
                   <div className="ew-stat-body">
                     <span className="ew-stat-label">Now Serving</span>
-                    <span className="ew-stat-value">
-                      {q?.currentlyServingToken || "—"}
-                    </span>
+                    <span className="ew-stat-value">{q?.currentlyServingToken || "—"}</span>
                   </div>
                 </div>
 
                 <div className="ew-stat-card">
-                  <div className="ew-stat-icon orange">
-                    <FiClock />
-                  </div>
+                  <div className="ew-stat-icon orange"><FiClock /></div>
                   <div className="ew-stat-body">
                     <span className="ew-stat-label">Avg. Service Time</span>
                     <span className="ew-stat-value">
@@ -235,39 +237,38 @@ const EstimatedWait = () => {
                   </div>
                 </div>
 
-                <div className="ew-stat-card highlighted">
-                  <div className="ew-stat-icon red">
-                    <FiHash />
+                {/* Your Token Time stat card */}
+                {t.scheduledTime && (
+                  <div className="ew-stat-card highlighted">
+                    <div className="ew-stat-icon purple"><FiCalendar /></div>
+                    <div className="ew-stat-body">
+                      <span className="ew-stat-label">Your Token Time</span>
+                      <span className="ew-stat-value">{formatLocalTime(t.scheduledTime)}</span>
+                    </div>
                   </div>
+                )}
+
+                <div className="ew-stat-card highlighted">
+                  <div className="ew-stat-icon red"><FiHash /></div>
                   <div className="ew-stat-body">
                     <span className="ew-stat-label">Total in Queue</span>
-                    <span className="ew-stat-value">
-                      {q?.totalTokens ?? 0}
-                    </span>
+                    <span className="ew-stat-value">{q?.totalTokens ?? 0}</span>
                   </div>
                 </div>
 
                 <div className="ew-stat-card">
-                  <div className="ew-stat-icon purple">
-                    <FiCheckCircle />
-                  </div>
+                  <div className="ew-stat-icon purple"><FiCheckCircle /></div>
                   <div className="ew-stat-body">
                     <span className="ew-stat-label">Completed</span>
-                    <span className="ew-stat-value">
-                      {q?.completedCount ?? 0}
-                    </span>
+                    <span className="ew-stat-value">{q?.completedCount ?? 0}</span>
                   </div>
                 </div>
 
                 <div className="ew-stat-card">
-                  <div className="ew-stat-icon teal">
-                    <FiUsers />
-                  </div>
+                  <div className="ew-stat-icon teal"><FiUsers /></div>
                   <div className="ew-stat-body">
                     <span className="ew-stat-label">Still Waiting</span>
-                    <span className="ew-stat-value">
-                      {q?.waitingCount ?? 0}
-                    </span>
+                    <span className="ew-stat-value">{q?.waitingCount ?? 0}</span>
                   </div>
                 </div>
 
@@ -280,10 +281,7 @@ const EstimatedWait = () => {
                   <span>{progressPct(t, q)}% completed</span>
                 </div>
                 <div className="ew-progress-track">
-                  <div
-                    className="ew-progress-fill"
-                    style={{ width: `${progressPct(t, q)}%` }}
-                  />
+                  <div className="ew-progress-fill" style={{ width: `${progressPct(t, q)}%` }} />
                 </div>
                 <div className="ew-progress-meta">
                   <span>{q?.completedCount ?? 0} served</span>
@@ -306,15 +304,28 @@ const EstimatedWait = () => {
                     <span>Date</span>
                     <strong>{t.bookingDate || "—"}</strong>
                   </div>
+                  {t.scheduledTime && (
+                    <div className="ew-detail-row">
+                      <span>Token Time</span>
+                      <strong className="token-time-value">
+                        {formatLocalTime(t.scheduledTime)}
+                        {t.slotEndTime && ` – ${formatLocalTime(t.slotEndTime)}`}
+                      </strong>
+                    </div>
+                  )}
+                  {(t.estimatedWaitTimeMinutes ?? 0) > 0 && (
+                    <div className="ew-detail-row">
+                      <span>Est. Wait</span>
+                      <strong>~{t.estimatedWaitTimeMinutes} mins</strong>
+                    </div>
+                  )}
                   <div className="ew-detail-row">
                     <span>Type</span>
                     <strong>{t.queueType === "DOCTOR" ? "Doctor Visit" : "Service Counter"}</strong>
                   </div>
                   <div className="ew-detail-row">
                     <span>Status</span>
-                    <strong className={statusClass(t.status)}>
-                      {statusLabel(t.status)}
-                    </strong>
+                    <strong className={statusClass(t.status)}>{statusLabel(t.status)}</strong>
                   </div>
                 </div>
               </div>
@@ -329,11 +340,9 @@ const EstimatedWait = () => {
                 </span>
               </div>
 
-              {/* ── REFRESH BUTTON ───────────────────── */}
               <button className="ew-refresh-btn" onClick={fetchAll}>
                 <FiRefreshCw /> Refresh Now
               </button>
-
             </>
           )}
         </div>
@@ -343,12 +352,3 @@ const EstimatedWait = () => {
 };
 
 export default EstimatedWait;
-
-
-
-
-
-
-
-
-
