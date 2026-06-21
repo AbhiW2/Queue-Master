@@ -118,7 +118,6 @@ const ADDashboardPage = ({ stats, isHospital, doctors, services,
         </div>
       )}
 
-      {/* ── Live Queue ───────────────────────────────────── */}
       <div>
         <div className="ad-section-title">Today's Queue — Live</div>
         <div className="ad-queue-stats">
