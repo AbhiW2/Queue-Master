@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useNotifications from "../../../hooks/useNotifications";
+import ChatBot from "../components/ChatBot";
 import "../styles/UserDashboard.scss";
 
 import {
@@ -51,8 +52,6 @@ const UserDashboard = () => {
     clearAll,
     refresh
   } = useNotifications(userId);
-
-  // No window.__queueNotify needed — backend handles all notification logic
 
   // ── Fetch history for "Total Visits" stat ─────────────
   useEffect(() => {
@@ -438,25 +437,12 @@ const UserDashboard = () => {
           </div>
         </footer>
 
+        {/* ✅ Chatbot — visible only on User Dashboard */}
+        <ChatBot />
+
       </main>
     </div>
   );
 };
 
 export default UserDashboard;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

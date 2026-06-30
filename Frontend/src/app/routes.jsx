@@ -23,6 +23,7 @@ import Appointments from "../features/user/pages/Appointments";
 // import ManageCounters from "../features/admin/pages/ManageCounter";
 // import ServicesAndQueues from "../features/admin/pages/ServicesAndQueues";
 import SuperAdminDashboard from "../features/superadmin/pages/SuperAdminDashboard";
+import ChatBot from "../features/user/components/ChatBot";
 const AppRoutes = () => {
   return (
     <BrowserRouter>
